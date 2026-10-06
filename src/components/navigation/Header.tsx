@@ -8,6 +8,7 @@ import { NAV_ITEMS, SITE_NAME } from '@/lib/constants';
 import { NavLink } from './NavLink';
 import { MobileMenu } from './MobileMenu';
 import { Button } from '@/components/ui/Button';
+import { Logo } from '@/components/ui/Logo';
 import { useAuth } from '@/contexts/AuthContext';
 import { SearchOverlay } from '@/components/search/SearchOverlay';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
@@ -70,16 +71,20 @@ export function Header() {
             className="group flex items-center gap-2.5 sm:gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-charcoal"
             aria-label="Darey's Artrealm - Return to Homepage"
           >
-            <span
+            <div
               className={cn(
-                'flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-lg font-display text-base sm:text-lg select-none transition-all duration-300 shadow-subtle shrink-0',
+                'flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg select-none transition-all duration-300 shadow-subtle shrink-0 p-1',
                 isDarkHeader
-                  ? 'bg-canvas text-charcoal group-hover:bg-canvas-subtle'
-                  : 'bg-charcoal text-canvas group-hover:bg-charcoal-muted'
+                  ? 'bg-canvas/10 backdrop-blur-xs group-hover:bg-canvas/20'
+                  : 'bg-charcoal/5 group-hover:bg-charcoal/10'
               )}
             >
-              Da
-            </span>
+              <Logo
+                variant={isDarkHeader ? 'light' : 'dark'}
+                size={26}
+                className="transition-transform duration-300 group-hover:scale-105"
+              />
+            </div>
             <div className="flex flex-col">
               <span
                 className={cn(

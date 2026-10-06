@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { User, Check, Loader2, MapPin, Mail, Phone } from 'lucide-react';
+import { User, Check, Loader2, MapPin, Mail, Phone, AlertCircle } from 'lucide-react';
 import { AccountShell } from '@/components/account/AccountShell';
 import { FormField } from '@/components/forms/FormField';
 import { Button } from '@/components/ui/Button';
@@ -28,6 +28,7 @@ export default function AccountProfilePage() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -52,8 +53,9 @@ export default function AccountProfilePage() {
     e.preventDefault();
     setIsSaving(true);
     setSavedSuccess(false);
+    setError(null);
 
-    await updateProfile({
+    const res = await updateProfile({
       firstName,
       lastName,
       email,
@@ -74,11 +76,15 @@ export default function AccountProfilePage() {
     });
 
     setIsSaving(false);
-    setSavedSuccess(true);
 
-    setTimeout(() => {
-      setSavedSuccess(false);
-    }, 3500);
+    if (res.success) {
+      setSavedSuccess(true);
+      setTimeout(() => {
+        setSavedSuccess(false);
+      }, 3500);
+    } else {
+      setError(res.error || 'Failed to update profile.');
+    }
   };
 
   return (
@@ -87,6 +93,13 @@ export default function AccountProfilePage() {
       subtitle="Manage your personal provenance record and default white-glove delivery specifications."
     >
       <form onSubmit={handleSubmit} className="space-y-8">
+        {error && (
+          <div className="p-3 bg-red-500/10 text-red-700 text-xs rounded-xl border border-red-500/20 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
+
         {/* Personal Details */}
         <div className="p-6 sm:p-8 bg-canvas border border-canvas-border rounded-sm space-y-6">
           <div className="flex items-center justify-between border-b border-canvas-border pb-4">

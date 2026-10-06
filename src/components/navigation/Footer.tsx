@@ -7,6 +7,7 @@ import { ArrowUpRight } from 'lucide-react';
 import { SITE_NAME, NAV_ITEMS, SOCIAL_LINKS, CONTACT_INFO } from '@/lib/constants';
 import { Container } from '@/components/layout/Container';
 import { Button } from '@/components/ui/Button';
+import { Logo } from '@/components/ui/Logo';
 
 export function Footer() {
   const pathname = usePathname();
@@ -24,9 +25,9 @@ export function Footer() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-start">
             <div className="lg:col-span-7">
               <div className="flex items-center gap-3 mb-4">
-                <span className="flex items-center justify-center w-8 h-8 rounded-lg font-display text-lg bg-charcoal text-canvas select-none shadow-sm">
-                  Da
-                </span>
+                <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-charcoal/5 border border-canvas-border select-none shadow-xs p-1.5">
+                  <Logo variant="dark" size={28} />
+                </div>
                 <p className="gallery-plaque text-xs text-charcoal-subtle">
                   The exhibition continues
                 </p>

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ArrowUpRight } from 'lucide-react';
 import { NAV_ITEMS, SOCIAL_LINKS, CONTACT_INFO, SITE_NAME } from '@/lib/constants';
 import { Button } from '@/components/ui/Button';
+import { Logo } from '@/components/ui/Logo';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -64,9 +65,14 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             <Link
               href="/"
               onClick={onClose}
-              className="font-display text-xl sm:text-2xl text-charcoal font-semibold tracking-gallery"
+              className="group flex items-center gap-3 focus:outline-none"
             >
-              {SITE_NAME}
+              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-charcoal/5 border border-canvas-border select-none p-1">
+                <Logo variant="dark" size={24} />
+              </div>
+              <span className="font-display text-xl sm:text-2xl text-charcoal font-semibold tracking-gallery">
+                {SITE_NAME}
+              </span>
             </Link>
 
             <button

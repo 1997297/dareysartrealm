@@ -26,6 +26,8 @@ import { cn } from '@/lib/utils';
 import { enquiryService } from '@/services/enquiryService';
 import { notificationService } from '@/services/notificationService';
 import { MOCK_ADMIN_USER } from '@/data/mockStudioData';
+import { useAuth } from '@/contexts/AuthContext';
+import { Logo } from '@/components/ui/Logo';
 
 interface NavItem {
   label: string;
@@ -46,6 +48,7 @@ interface StudioSidebarProps {
 
 export function StudioSidebar({ onItemClick, className }: StudioSidebarProps) {
   const pathname = usePathname();
+  const { user } = useAuth();
   const [unreadEnquiries, setUnreadEnquiries] = useState(0);
   const [unreadNotifs, setUnreadNotifs] = useState(0);
 
@@ -182,9 +185,9 @@ export function StudioSidebar({ onItemClick, className }: StudioSidebarProps) {
           onClick={onItemClick}
           className="flex items-center gap-3 group"
         >
-          <span className="flex items-center justify-center w-8 h-8 rounded-lg font-display text-lg bg-charcoal text-canvas select-none shadow-sm shrink-0">
-            Da
-          </span>
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-charcoal/5 border border-canvas-border select-none p-1 shrink-0">
+            <Logo variant="dark" size={24} />
+          </div>
           <div className="flex flex-col min-w-0">
             <span className="gallery-plaque text-[0.625rem] text-charcoal-subtle tracking-[0.2em] block mb-0.5">
               ARTREALM STUDIO
@@ -263,22 +266,22 @@ export function StudioSidebar({ onItemClick, className }: StudioSidebarProps) {
           <ExternalLink className="w-3.5 h-3.5 text-charcoal-subtle group-hover:text-charcoal" />
         </Link>
 
-        {/* Darey Profile Pill */}
+        {/* Admin Profile Pill */}
         <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-canvas-subtle border border-canvas-border/60">
           <div className="w-8 h-8 rounded-full overflow-hidden bg-stone-300 shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={MOCK_ADMIN_USER.avatarUrl}
-              alt={MOCK_ADMIN_USER.name}
+              src={user?.avatarUrl || MOCK_ADMIN_USER.avatarUrl}
+              alt={user?.displayName || user?.firstName || MOCK_ADMIN_USER.name}
               className="w-full h-full object-cover"
             />
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-medium text-charcoal truncate">
-              {MOCK_ADMIN_USER.name}
+              {user?.displayName || user?.firstName || MOCK_ADMIN_USER.name}
             </p>
             <p className="text-[0.6875rem] text-charcoal-subtle truncate">
-              {MOCK_ADMIN_USER.roleTitle}
+              {user?.role === 'admin' ? 'Studio Administrator' : MOCK_ADMIN_USER.roleTitle}
             </p>
           </div>
           <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" title="Online & Active" />

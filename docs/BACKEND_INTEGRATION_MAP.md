@@ -4,18 +4,25 @@ This document establishes the official integration blueprint for transitioning t
 
 ---
 
-## 1. Authentication Architecture
+## 1. Authentication Architecture (STATUS: IMPLEMENTED IN PHASE 7A)
 
 **Target Service:** Supabase Auth (GoTrue) + PostgreSQL Row-Level Security (RLS)  
-**Current Frontend Abstraction:** `src/contexts/AuthContext.tsx`, `src/types/auth.ts`
+**Implementation Files:**
+- Browser / Server / Middleware Clients: `src/lib/supabase/client.ts`, `src/lib/supabase/server.ts`, `src/lib/supabase/middleware.ts`, `src/middleware.ts`
+- Database Migration: `supabase/migrations/20261006000001_create_profiles_and_roles.sql`
+- Types & State: `src/types/supabase.ts`, `src/types/auth.ts`, `src/contexts/AuthContext.tsx`
+- Documentation: `docs/PHASE_7A_BACKEND_FOUNDATION.md`
 
-| Touchpoint | Current Simulation | Target Backend Route / SDK Call | Required Schema & Payload |
+| Touchpoint | Implementation Status | Target Backend Route / SDK Call | Security & Verification |
 | :--- | :--- | :--- | :--- |
-| **Collector Login** (`/login`) | `mockAuthService.login()` with localStorage session | `supabase.auth.signInWithPassword({ email, password })` | Returns JWT access token, refresh token, user UUID. Profile row joined from `public.profiles`. |
-| **Collector Registration** (`/register`) | `mockAuthService.register()` with local state | `supabase.auth.signUp({ email, password, options: { data: { fullName, phone } } })` | Automatically inserts row into `public.profiles` via database trigger `handle_new_user()`. Role defaults to `'collector'`. |
-| **Password Reset** (`/forgot-password`) | Simulated 600ms latency | `supabase.auth.resetPasswordForEmail(email, { redirectTo: '/account/reset-password' })` | Triggers transactional email via Supabase Auth + Resend SMTP. |
-| **Collector Logout** (Header / Account) | `mockAuthService.logout()` clears local storage | `supabase.auth.signOut()` | Invalidates session tokens, flushes client caches. |
-| **Role Verification & Studio Gate** (`/studio/*`) | `user.role === 'admin'` checked in `StudioClientShell.tsx` | Supabase Custom Claims (`app_metadata.role === 'admin'`) + PostgreSQL RLS policy `auth.jwt() ->> 'role' = 'admin'` | Blocks non-admin requests at both Edge middleware and database level. |
+| **Collector Login** (`/login`) | **LIVE** | `supabase.auth.signInWithPassword({ email, password })` | Returns JWT access token, refresh token, user UUID. Profile row joined from `public.profiles`. Open-redirect protected via sanitized `next` param. |
+| **Collector Registration** (`/register`) | **LIVE** | `supabase.auth.signUp({ email, password, options: { data: { first_name, last_name, phone } } })` | Automatically provisions row in `public.profiles` via database trigger `handle_new_user()`. Role hardcoded to `'collector'`. |
+| **Password Reset** (`/forgot-password`) | **LIVE** | `supabase.auth.resetPasswordForEmail(email, { redirectTo: '/auth/callback?next=/account/reset-password' })` | Triggers transactional email with PKCE recovery code. |
+| **Password Reset Receiver** (`/account/reset-password`) | **LIVE** | `supabase.auth.updateUser({ password })` | Updates user password in active recovery session. |
+| **Collector Logout** (Header / Account) | **LIVE** | `supabase.auth.signOut()` | Invalidates session tokens, flushes client caches. |
+| **Server-Side Route Gate** (`/account/*`) | **LIVE** | Next.js Edge Middleware (`src/middleware.ts`) | Rejects unauthenticated traffic and redirects to `/login?next=...` |
+| **Role Verification & Studio Gate** (`/studio/*`) | **LIVE** | Next.js Edge Middleware + `StudioClientShell.tsx` + `public.is_admin()` SQL helper | Blocks non-admin requests at both Edge middleware and database level. Redirects non-admins to `/account?denied=studio`. |
+| **Row Level Security (RLS)** | **LIVE** | `public.profiles` policies | Enforces strict data isolation. Collectors can update contact info but `with check` mathematically blocks self-privilege escalation to admin. |
 
 ---
 

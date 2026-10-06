@@ -1,44 +1,6 @@
-import { CollectorUser } from '@/types/auth';
 import { Order } from '@/types/commerce';
 import { CollectorCommission, Certificate, CollectorMessageThread } from '@/types/collector';
 import { MOCK_ARTWORKS } from './mockArtworks';
-
-export const DEMO_COLLECTOR: CollectorUser = {
-  id: 'usr-collector-001',
-  firstName: 'Elena',
-  lastName: 'Rostova',
-  email: 'elena.rostova@gallerymail.com',
-  role: 'collector',
-  phone: '+44 7700 900142',
-  country: 'United Kingdom',
-  city: 'London',
-  preferredContactMethod: 'email',
-  defaultAddress: {
-    fullName: 'Elena Rostova',
-    email: 'elena.rostova@gallerymail.com',
-    phone: '+44 7700 900142',
-    addressLine1: '14 Cadogan Square, Flat 3B',
-    city: 'London',
-    stateRegion: 'Greater London',
-    postalCode: 'SW1X 0JW',
-    country: 'United Kingdom',
-    deliveryNotes: 'Building has porter service 8am–6pm',
-  },
-  createdAt: '2025-11-14T10:00:00Z',
-};
-
-export const DEMO_ADMIN: CollectorUser = {
-  id: 'usr-admin-001',
-  firstName: 'Darey',
-  lastName: 'Studio',
-  email: 'studio@dareysartrealm.com',
-  role: 'admin',
-  phone: '+234 800 000 0000',
-  country: 'Nigeria',
-  city: 'Lagos',
-  preferredContactMethod: 'email',
-  createdAt: '2024-01-01T00:00:00Z',
-};
 
 
 // Initial simulated acquired artwork: "Silent Dialogue"

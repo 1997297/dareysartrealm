@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { X, Printer, ShieldCheck, Download } from 'lucide-react';
 import { Certificate } from '@/types/collector';
 import { Button } from '@/components/ui/Button';
+import { Logo } from '@/components/ui/Logo';
 
 interface CertificateModalProps {
   certificate: Certificate | null;
@@ -57,7 +58,10 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
         {/* PRINTABLE ARCHIVAL CERTIFICATE DOCUMENT */}
         <div className="p-8 sm:p-12 md:p-14 bg-[#FCFBF8] text-charcoal border-8 border-double border-canvas-border/80 m-4 rounded-xl">
           {/* Certificate Header */}
-          <div className="text-center space-y-2 border-b border-charcoal/20 pb-8">
+          <div className="text-center space-y-2 border-b border-charcoal/20 pb-8 flex flex-col items-center">
+            <div className="w-12 h-12 flex items-center justify-center mb-1">
+              <Logo variant="dark" size={44} />
+            </div>
             <span className="font-display tracking-[0.25em] text-xs font-bold uppercase text-charcoal">
               DAREY’S ARTREALM
             </span>
@@ -148,12 +152,10 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
 
             {/* Simulated Wax Seal Graphic */}
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full border-2 border-[#8A2424] bg-[#962A2A] text-canvas flex flex-col items-center justify-center shadow-md">
-                <span className="font-display font-bold text-[9px] tracking-widest text-[#FCD5D5]">
-                  DAREY
-                </span>
-                <span className="text-[7px] tracking-gallery text-[#FCD5D5] uppercase">
-                  SEAL
+              <div className="w-16 h-16 rounded-full border-2 border-[#8A2424] bg-[#962A2A] text-canvas flex flex-col items-center justify-center shadow-md p-2">
+                <Logo variant="light" size={24} className="opacity-95" />
+                <span className="text-[6px] tracking-widest text-[#FCD5D5] uppercase font-bold mt-0.5">
+                  STUDIO SEAL
                 </span>
               </div>
               <div className="text-right">

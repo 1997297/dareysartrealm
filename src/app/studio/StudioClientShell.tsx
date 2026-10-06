@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Lock, ShieldAlert, ArrowLeft, ArrowRight, UserCheck } from 'lucide-react';
+import { Lock, LogIn, ArrowRight } from 'lucide-react';
 import { StudioSidebar } from '@/components/studio/StudioSidebar';
 import { StudioTopBar } from '@/components/studio/StudioTopBar';
 import { StudioMobileNav } from '@/components/studio/StudioMobileNav';
@@ -11,7 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 
 export function StudioClientShell({ children }: { children: React.ReactNode }) {
-  const { user, isAdmin, loginAsAdmin, isLoading } = useAuth();
+  const { user, isAdmin, isLoading } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
@@ -61,28 +61,31 @@ export function StudioClientShell({ children }: { children: React.ReactNode }) {
               Active Session
             </span>
             <p className="text-charcoal font-medium">
-              {user ? `${user.firstName} ${user.lastName} (${user.role || 'collector'})` : 'Guest Visitor'}
+              {user ? `${user.displayName || user.firstName} (${user.role})` : 'Guest Visitor (Unauthenticated)'}
             </p>
             <p className="text-charcoal-muted text-[11px]">
-              Standard collector privileges do not permit direct studio administration access.
+              {user
+                ? 'Standard collector privileges do not permit direct studio administration access.'
+                : 'Authentication required. Please sign in with verified studio administrator credentials.'}
             </p>
           </div>
 
           <div className="space-y-3 pt-2">
-            <button
-              type="button"
-              onClick={loginAsAdmin}
-              className="w-full py-3 px-4 bg-charcoal text-canvas hover:bg-charcoal-muted text-xs font-medium transition-colors flex items-center justify-center gap-2 rounded-lg"
+            <Button
+              href="/login?next=/studio"
+              variant="primary"
+              size="md"
+              className="w-full justify-center flex items-center gap-2 rounded-xl text-xs"
             >
-              <UserCheck className="w-4 h-4" />
-              <span>Simulate Darey Admin Login</span>
-            </button>
+              <LogIn className="w-4 h-4" />
+              <span>{user ? 'Switch to Administrator Account' : 'Sign In with Studio Account'}</span>
+            </Button>
 
             <div className="flex gap-2">
-              <Button href="/account" variant="secondary" size="sm" className="flex-1 text-xs">
+              <Button href="/account" variant="secondary" size="sm" className="flex-1 text-xs rounded-xl">
                 Collector Portal
               </Button>
-              <Button href="/" variant="outline" size="sm" className="flex-1 text-xs">
+              <Button href="/" variant="outline" size="sm" className="flex-1 text-xs rounded-xl">
                 Public Gallery
               </Button>
             </div>
