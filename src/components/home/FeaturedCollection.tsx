@@ -21,14 +21,6 @@ export function FeaturedCollection({ collection }: FeaturedCollectionProps) {
     <Section background="paper" spacing="lg" className="border-t border-canvas-border">
       <Container size="wide">
         <div className="relative overflow-hidden bg-canvas border border-canvas-border p-8 sm:p-12 lg:p-20 shadow-subtle rounded-3xl">
-          {/* Subtle Accent Color Splash Indicator */}
-          {collection.accentColor && (
-            <div
-              className="absolute top-0 left-0 w-24 h-1.5 rounded-br-md"
-              style={{ backgroundColor: collection.accentColor }}
-            />
-          )}
-
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
             {/* Left: Oversized Typography & Narrative */}
             <div className="lg:col-span-6 z-10">

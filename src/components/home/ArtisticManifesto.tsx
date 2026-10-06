@@ -39,7 +39,7 @@ export function ArtisticManifesto() {
                 Every canvas begins where verbal explanation fails. My work is not an intellectual puzzle waiting to be decoded; it is an intimate physical encounter with pigment, rhythm, and raw vulnerability.
               </p>
               <div className="mt-6 flex items-center gap-4">
-                <span className="font-display italic text-2xl text-charcoal">&mdash; Darey</span>
+                <span className="font-display italic text-2xl text-charcoal">Darey</span>
                 <span className="gallery-plaque text-[0.625rem] text-charcoal-subtle">
                   STUDIO PRACTICE
                 </span>
@@ -59,8 +59,8 @@ export function ArtisticManifesto() {
             >
               <div className="relative aspect-[4/5] overflow-hidden bg-canvas-muted shadow-gallery border border-canvas-border rounded-2xl">
                 <Image
-                  src="/artworks/pic2.jpeg"
-                  alt="Textural pigment and gold leaf study by Darey"
+                  src="/artworks/pic5.jpeg"
+                  alt="Textural pigment and figurative study by Darey"
                   fill
                   sizes="(max-width: 1024px) 100vw, 33vw"
                   className="object-cover"

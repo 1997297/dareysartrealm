@@ -64,4 +64,25 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  /* Infinite continuous marquee scroll */
+  @keyframes marquee-scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  .animate-marquee-infinite {
+    display: flex;
+    width: max-content;
+    animation: marquee-scroll 45s linear infinite;
+  }
+
+  .animate-marquee-infinite:hover {
+    animation-play-state: paused;
+  }
 }
+

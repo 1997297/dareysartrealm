@@ -185,8 +185,8 @@ export function StudioSidebar({ onItemClick, className }: StudioSidebarProps) {
           onClick={onItemClick}
           className="flex items-center gap-3 group"
         >
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-charcoal/5 border border-canvas-border select-none p-1 shrink-0">
-            <Logo variant="dark" size={24} />
+          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#121212] border border-charcoal/40 select-none p-1 shrink-0 shadow-sm">
+            <Logo variant="light" size={32} />
           </div>
           <div className="flex flex-col min-w-0">
             <span className="gallery-plaque text-[0.625rem] text-charcoal-subtle tracking-[0.2em] block mb-0.5">

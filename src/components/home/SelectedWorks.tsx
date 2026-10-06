@@ -67,78 +67,95 @@ export function SelectedWorks({ artworks }: SelectedWorksProps) {
         </motion.div>
       </Container>
 
-      {/* Horizontal scroll rail — full bleed, no max-width constraint */}
+      {/* Infinite continuous horizontal marquee rail — scrolls non-stop to the left, pauses on hover */}
       <div
-        ref={railRef}
-        className={cn(
-          'flex gap-5 sm:gap-6 overflow-x-auto scroll-smooth',
-          'px-5 sm:px-8 md:px-12 lg:px-16',
-          '[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]',
-          'pb-4' // breathing room for shadow
-        )}
+        className="w-full overflow-hidden select-none py-2"
         role="region"
-        aria-label="Selected artworks horizontal rail"
+        aria-label="Selected artworks continuous marquee"
       >
-        {artworks.map((artwork, index) => (
-          <motion.div
-            key={artwork.id}
-            variants={fadeUp}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-30px' }}
-            custom={{ delay: 0.08 * index }}
-            className="shrink-0 w-[220px] sm:w-[240px] md:w-[260px]"
-          >
-            <Link
-              href={`/artworks/${artwork.slug}`}
-              className="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-charcoal rounded-xl"
-              data-cursor="VIEW"
-              aria-label={`View ${artwork.title}`}
+        <div className="animate-marquee-infinite gap-6 sm:gap-8 px-4">
+          {/* First loop track */}
+          {artworks.map((artwork) => (
+            <div
+              key={`track1-${artwork.id}`}
+              className="shrink-0 w-[240px] sm:w-[270px] md:w-[300px]"
             >
-              {/* Square thumbnail — consistent equal frames */}
-              <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-canvas-muted border border-canvas-border shadow-subtle group-hover:shadow-gallery transition-shadow duration-500">
-                <Image
-                  src={artwork.coverImage.url}
-                  alt={artwork.coverImage.alt || artwork.title}
-                  fill
-                  sizes="260px"
-                  className="object-cover transition-transform duration-700 ease-artistic group-hover:scale-105"
-                />
-              </div>
-
-              {/* Metadata + status badge below image */}
-              <div className="mt-3 px-0.5">
-                <div className="flex items-start justify-between gap-2">
-                  <p className="font-display text-base text-charcoal font-normal leading-tight truncate group-hover:text-charcoal-muted transition-colors">
-                    {artwork.title}
-                  </p>
-                  <ArtworkStatusBadge
-                    status={artwork.status}
-                    className="text-[0.5rem] px-1.5 py-0.5 shrink-0 mt-0.5"
+              <Link
+                href={`/artworks/${artwork.slug}`}
+                className="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-charcoal rounded-xl"
+                data-cursor="VIEW"
+                aria-label={`View ${artwork.title}`}
+              >
+                <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-canvas-muted border border-canvas-border shadow-subtle group-hover:shadow-gallery transition-shadow duration-500">
+                  <Image
+                    src={artwork.coverImage.url}
+                    alt={artwork.coverImage.alt || artwork.title}
+                    fill
+                    sizes="300px"
+                    className="object-cover transition-transform duration-700 ease-artistic group-hover:scale-105"
                   />
                 </div>
-                <p className="gallery-plaque text-[0.625rem] text-charcoal-subtle mt-1">
-                  {artwork.year}
-                  {artwork.medium && ` · ${artwork.medium.split(',')[0]}`}
-                </p>
-              </div>
-            </Link>
-          </motion.div>
-        ))}
 
-        {/* Terminal card: see more */}
-        <div className="shrink-0 w-[220px] sm:w-[240px] md:w-[260px] flex items-center justify-center">
-          <Link
-            href="/artworks"
-            className="group flex flex-col items-center justify-center gap-3 aspect-square w-full rounded-xl border border-dashed border-canvas-border hover:border-charcoal/30 bg-canvas-subtle hover:bg-canvas-muted transition-all duration-300 text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-charcoal"
-          >
-            <span className="font-display text-3xl text-charcoal/40 group-hover:text-charcoal transition-colors">
-              &rarr;
-            </span>
-            <span className="gallery-plaque text-[0.625rem] text-charcoal-subtle group-hover:text-charcoal transition-colors">
-              View all works
-            </span>
-          </Link>
+                <div className="mt-3 px-0.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="font-display text-base text-charcoal font-normal leading-tight truncate group-hover:text-charcoal-muted transition-colors">
+                      {artwork.title}
+                    </p>
+                    <ArtworkStatusBadge
+                      status={artwork.status}
+                      className="text-[0.5rem] px-1.5 py-0.5 shrink-0 mt-0.5"
+                    />
+                  </div>
+                  <p className="gallery-plaque text-[0.625rem] text-charcoal-subtle mt-1 truncate">
+                    {artwork.year}
+                    {artwork.medium && ` · ${artwork.medium.split(',')[0]}`}
+                  </p>
+                </div>
+              </Link>
+            </div>
+          ))}
+
+          {/* Duplicate track for seamless infinite marquee loop */}
+          {artworks.map((artwork) => (
+            <div
+              key={`track2-${artwork.id}`}
+              className="shrink-0 w-[240px] sm:w-[270px] md:w-[300px]"
+              aria-hidden="true"
+            >
+              <Link
+                href={`/artworks/${artwork.slug}`}
+                tabIndex={-1}
+                className="group block focus:outline-none rounded-xl"
+                data-cursor="VIEW"
+              >
+                <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-canvas-muted border border-canvas-border shadow-subtle group-hover:shadow-gallery transition-shadow duration-500">
+                  <Image
+                    src={artwork.coverImage.url}
+                    alt={artwork.coverImage.alt || artwork.title}
+                    fill
+                    sizes="300px"
+                    className="object-cover transition-transform duration-700 ease-artistic group-hover:scale-105"
+                  />
+                </div>
+
+                <div className="mt-3 px-0.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="font-display text-base text-charcoal font-normal leading-tight truncate group-hover:text-charcoal-muted transition-colors">
+                      {artwork.title}
+                    </p>
+                    <ArtworkStatusBadge
+                      status={artwork.status}
+                      className="text-[0.5rem] px-1.5 py-0.5 shrink-0 mt-0.5"
+                    />
+                  </div>
+                  <p className="gallery-plaque text-[0.625rem] text-charcoal-subtle mt-1 truncate">
+                    {artwork.year}
+                    {artwork.medium && ` · ${artwork.medium.split(',')[0]}`}
+                  </p>
+                </div>
+              </Link>
+            </div>
+          ))}
         </div>
       </div>
     </Section>

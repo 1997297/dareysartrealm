@@ -60,8 +60,8 @@ export function Header() {
         className={cn(
           'fixed top-0 left-0 right-0 z-40 w-full transition-all duration-500 ease-artistic',
           isScrolled
-            ? 'bg-canvas/90 backdrop-blur-md py-3.5 border-b border-canvas-border/80 shadow-subtle'
-            : 'bg-transparent py-5 md:py-6'
+            ? 'bg-canvas/90 backdrop-blur-md py-2.5 sm:py-3 border-b border-canvas-border/80 shadow-subtle'
+            : 'bg-transparent py-3.5 sm:py-4 md:py-4.5'
         )}
       >
         <div className="mx-auto flex w-full max-w-[92rem] items-center justify-between px-5 sm:px-8 md:px-12 lg:px-16">
@@ -73,14 +73,12 @@ export function Header() {
           >
             <div
               className={cn(
-                'flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg select-none transition-all duration-300 shadow-subtle shrink-0 p-1',
-                isDarkHeader
-                  ? 'bg-canvas/10 backdrop-blur-xs group-hover:bg-canvas/20'
-                  : 'bg-charcoal/5 group-hover:bg-charcoal/10'
+                'flex items-center justify-center w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-md select-none transition-all duration-300 shadow-xs shrink-0 p-0.5 bg-[#121212] border border-charcoal/30 group-hover:bg-black group-hover:border-charcoal/60',
+                isDarkHeader && 'border-white/20'
               )}
             >
               <Logo
-                variant={isDarkHeader ? 'light' : 'dark'}
+                variant="light"
                 size={26}
                 className="transition-transform duration-300 group-hover:scale-105"
               />
@@ -88,7 +86,7 @@ export function Header() {
             <div className="flex flex-col">
               <span
                 className={cn(
-                  'font-display text-sm sm:text-base font-semibold tracking-[0.16em] transition-colors',
+                  'font-display text-sm sm:text-base font-semibold tracking-[0.16em] transition-colors leading-tight',
                   isDarkHeader
                     ? 'text-canvas group-hover:text-canvas/80'
                     : 'text-charcoal group-hover:text-charcoal-muted'
@@ -98,11 +96,11 @@ export function Header() {
               </span>
               <span
                 className={cn(
-                  'gallery-plaque text-[0.5rem] tracking-[0.22em] -mt-0.5 transition-colors',
+                  'gallery-plaque text-[0.55rem] tracking-[0.24em] transition-colors',
                   isDarkHeader ? 'text-canvas/60' : 'text-charcoal-subtle'
                 )}
               >
-                CONTEMPORARY STUDIO
+                ART STUDIO
               </span>
             </div>
           </Link>

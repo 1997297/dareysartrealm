@@ -36,11 +36,11 @@ export function ArtistIntroduction() {
               {/* Offset: small portrait of Darey */}
               <div className="absolute -bottom-8 -right-6 w-1/2 aspect-square overflow-hidden bg-canvas border border-canvas-border hidden sm:block shadow-gallery rounded-xl">
                 <Image
-                  src="/artworks/hero.jpeg"
-                  alt="Darey at work in the studio"
+                  src="/artist-portrait.jpg"
+                  alt="Portrait of Darey"
                   fill
                   sizes="25vw"
-                  className="object-cover object-top"
+                  className="object-cover object-center"
                 />
               </div>
             </motion.div>

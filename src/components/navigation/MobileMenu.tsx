@@ -67,8 +67,8 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               onClick={onClose}
               className="group flex items-center gap-3 focus:outline-none"
             >
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-charcoal/5 border border-canvas-border select-none p-1">
-                <Logo variant="dark" size={24} />
+              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#121212] border border-charcoal/40 select-none p-1 shadow-sm">
+                <Logo variant="light" size={34} />
               </div>
               <span className="font-display text-xl sm:text-2xl text-charcoal font-semibold tracking-gallery">
                 {SITE_NAME}
