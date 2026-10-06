@@ -27,11 +27,11 @@ export function SectionHeading({
               {kicker}
             </p>
           )}
-          <h2 className="font-display text-4xl sm:text-5xl md:text-6xl text-charcoal font-normal leading-[1.12] sm:leading-[1.1] tracking-tight">
+          <h2 className="font-display text-3xl xs:text-[2rem] sm:text-5xl md:text-6xl text-charcoal font-normal leading-[1.12] sm:leading-[1.1] tracking-tight">
             {title}
           </h2>
           {subtitle && (
-            <p className="mt-4 text-charcoal-muted text-base md:text-lg font-light leading-relaxed max-w-xl">
+            <p className="mt-3 sm:mt-4 text-charcoal-muted text-sm sm:text-base md:text-lg font-light leading-relaxed max-w-xl">
               {subtitle}
             </p>
           )}
@@ -44,17 +44,17 @@ export function SectionHeading({
   return (
     <div
       className={cn(
-        'mb-12 md:mb-16 lg:mb-20',
+        'mb-10 sm:mb-14 md:mb-16 lg:mb-20',
         align === 'center' ? 'text-center mx-auto max-w-3xl' : 'max-w-3xl',
         className
       )}
     >
       {kicker && (
-        <p className="gallery-plaque mb-3 text-xs tracking-gallery text-charcoal-subtle font-medium">
+        <p className="gallery-plaque mb-2 sm:mb-3 text-[0.625rem] sm:text-xs tracking-gallery text-charcoal-subtle font-medium">
           {kicker}
         </p>
       )}
-      <h2 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-charcoal font-normal leading-[1.12] sm:leading-[1.08] tracking-tight">
+      <h2 className="font-display text-3xl xs:text-[2rem] sm:text-5xl md:text-6xl lg:text-7xl text-charcoal font-normal leading-[1.12] sm:leading-[1.08] tracking-tight">
         {title}
       </h2>
       {subtitle && (

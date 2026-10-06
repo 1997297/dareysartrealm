@@ -95,7 +95,7 @@ export default function RegisterPage() {
       </div>
 
       {/* RIGHT: REGISTER FORM */}
-      <div className="lg:col-span-6 flex items-center justify-center p-6 sm:p-12 md:p-16 pt-32 lg:pt-16">
+      <div className="lg:col-span-6 flex items-center justify-center px-4 xs:px-6 sm:p-12 md:p-16 pt-24 sm:pt-32 lg:pt-16">
         <div className="w-full max-w-md space-y-8">
           {emailConfirmationRequired ? (
             <div className="text-center space-y-5 py-6 animate-in fade-in">
@@ -156,7 +156,7 @@ export default function RegisterPage() {
               )}
 
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
                   <FormField label="First Name" required>
                     <input
                       type="text"

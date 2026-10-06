@@ -194,14 +194,14 @@ export default function ArtworkDetailPage() {
                 </button>
 
                 {/* Primary Artwork Image with object-contain to strictly prevent cropping */}
-                <div className="relative max-h-[75vh] w-full flex items-center justify-center">
+                <div className="relative max-h-[60vh] sm:max-h-[75vh] w-full flex items-center justify-center">
                   <Image
                     src={galleryImages[selectedImageIndex]?.url || artwork.coverImage.url}
                     alt={galleryImages[selectedImageIndex]?.alt || artwork.title}
                     width={galleryImages[selectedImageIndex]?.width || 1400}
                     height={galleryImages[selectedImageIndex]?.height || 1800}
                     priority
-                    className="max-h-[72vh] w-auto h-auto object-contain mx-auto transition-transform duration-700 group-hover:scale-[1.015]"
+                    className="max-h-[58vh] sm:max-h-[72vh] w-auto h-auto object-contain mx-auto transition-transform duration-700 group-hover:scale-[1.015]"
                   />
                 </div>
 
@@ -214,14 +214,14 @@ export default function ArtworkDetailPage() {
 
               {/* Multiple Gallery Image Thumbnails */}
               {galleryImages.length > 1 && (
-                <div className="mt-4 flex items-center gap-3 overflow-x-auto max-w-full pb-2 scrollbar-none">
+                <div className="mt-4 flex items-center gap-2.5 sm:gap-3 overflow-x-auto max-w-full pb-2 scrollbar-none">
                   {galleryImages.map((img, idx) => (
                     <button
                       key={img.id || idx}
                       type="button"
                       onClick={() => setSelectedImageIndex(idx)}
                       className={cn(
-                        'relative h-16 w-20 flex-shrink-0 overflow-hidden border rounded-lg transition-all',
+                        'relative h-14 w-16 sm:h-16 sm:w-20 flex-shrink-0 overflow-hidden border rounded-lg transition-all',
                         selectedImageIndex === idx
                           ? 'border-charcoal ring-2 ring-charcoal/20 opacity-100'
                           : 'border-canvas-border opacity-60 hover:opacity-100'
@@ -242,7 +242,7 @@ export default function ArtworkDetailPage() {
             </div>
 
             {/* Right 5/12: Gallery Plaque Metadata & Status-Specific Actions */}
-            <div className="lg:col-span-5 flex flex-col justify-between space-y-8">
+            <div className="lg:col-span-5 flex flex-col justify-between space-y-6 sm:space-y-8">
               {/* Plaque Heading */}
               <div>
                 <div className="flex items-center gap-2 mb-2">
@@ -251,7 +251,7 @@ export default function ArtworkDetailPage() {
                   </span>
                   {artwork.collection && (
                     <>
-                      <span className="text-canvas-border text-xs">â€¢</span>
+                      <span className="text-canvas-border text-xs">•</span>
                       <Link
                         href={`/collections/${artwork.collection.slug}`}
                         className="gallery-plaque text-[0.625rem] text-charcoal-muted uppercase hover:text-charcoal transition-colors tracking-gallery"
@@ -262,16 +262,16 @@ export default function ArtworkDetailPage() {
                   )}
                 </div>
 
-                <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl text-charcoal font-normal leading-[1.12] sm:leading-[1.08] tracking-tight">
+                <h1 className="font-display text-3xl xs:text-4xl sm:text-5xl lg:text-6xl text-charcoal font-normal leading-[1.12] sm:leading-[1.08] tracking-tight">
                   {artwork.title}
                 </h1>
-                <p className="font-sans text-sm text-charcoal-subtle tracking-gallery mt-2">
+                <p className="font-sans text-xs sm:text-sm text-charcoal-subtle tracking-gallery mt-2">
                   Darey, {artwork.year}
                 </p>
               </div>
 
               {/* Gallery Plaque Technical Specifications */}
-              <div className="p-6 bg-canvas-paper border border-canvas-border space-y-4 rounded-sm">
+              <div className="p-4 sm:p-6 bg-canvas-paper border border-canvas-border space-y-4 rounded-sm">
                 <div className="border-b border-canvas-border pb-3">
                   <span className="text-[0.625rem] font-sans uppercase tracking-gallery text-charcoal-subtle block mb-1">
                     Medium & Technique
@@ -337,13 +337,13 @@ export default function ArtworkDetailPage() {
                 {/* 1. AVAILABLE STATUS */}
                 {artwork.status === 'available' && (
                   <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="flex flex-col xs:flex-row gap-3">
                       <Button
                         href="/cart"
                         variant="primary"
                         size="lg"
-                        className="w-full justify-center"
-                        title="Acquisition flow will be completed in Phase 4"
+                        className="w-full justify-center text-center py-3.5"
+                        title="Acquire this original artwork"
                       >
                         Acquire This Piece
                       </Button>
@@ -351,17 +351,17 @@ export default function ArtworkDetailPage() {
                         onClick={() => setEnquiryOpen(true)}
                         variant="outline"
                         size="lg"
-                        className="w-full justify-center"
+                        className="w-full justify-center text-center py-3.5"
                       >
                         Ask About This Work
                       </Button>
                     </div>
 
-                    <div className="flex items-center justify-between gap-3 pt-1">
+                    <div className="flex flex-col xs:flex-row items-stretch xs:items-center justify-between gap-2.5 sm:gap-3 pt-1">
                       <button
                         type="button"
                         onClick={() => setQuickInterestOpen(true)}
-                        className="flex-1 py-2.5 px-3 border border-canvas-border hover:border-charcoal text-xs text-charcoal tracking-gallery uppercase rounded-sm transition-colors text-center font-medium"
+                        className="flex-1 py-3 px-3 border border-canvas-border hover:border-charcoal text-xs text-charcoal tracking-gallery uppercase rounded-sm transition-colors text-center font-medium touch-target"
                       >
                         I&apos;m Interested
                       </button>
@@ -369,7 +369,7 @@ export default function ArtworkDetailPage() {
                       <button
                         type="button"
                         onClick={() => setViewInSpaceOpen(true)}
-                        className="flex-1 py-2.5 px-3 border border-canvas-border hover:border-charcoal text-xs text-charcoal tracking-gallery uppercase rounded-sm transition-colors text-center font-medium flex items-center justify-center gap-1.5"
+                        className="flex-1 py-3 px-3 border border-canvas-border hover:border-charcoal text-xs text-charcoal tracking-gallery uppercase rounded-sm transition-colors text-center font-medium touch-target flex items-center justify-center gap-1.5"
                       >
                         <Eye className="h-3.5 w-3.5" />
                         <span>View in Space</span>

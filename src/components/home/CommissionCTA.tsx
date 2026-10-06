@@ -12,7 +12,7 @@ export function CommissionCTA() {
   return (
     <Section background="subtle" spacing="xl" className="border-t border-canvas-border relative overflow-hidden">
       <Container size="wide">
-        <div className="relative bg-charcoal text-canvas px-6 py-16 sm:px-12 sm:py-24 lg:p-24 overflow-hidden shadow-gallery-lg rounded-3xl">
+        <div className="relative bg-charcoal text-canvas px-5 py-12 xs:px-6 xs:py-14 sm:px-12 sm:py-20 lg:p-24 overflow-hidden shadow-gallery-lg rounded-2xl sm:rounded-3xl">
           {/* Subtle Background Studio Texture Layer */}
           <div className="absolute inset-0 opacity-20 pointer-events-none mix-blend-luminosity">
             <Image
@@ -29,7 +29,7 @@ export function CommissionCTA() {
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: '-50px' }}
-              className="font-display text-4xl sm:text-6xl md:text-7xl lg:text-8xl text-canvas font-normal leading-[1.12] sm:leading-[1.08] tracking-tight"
+              className="font-display text-3xl xs:text-4xl sm:text-6xl md:text-7xl lg:text-8xl text-canvas font-normal leading-[1.12] sm:leading-[1.08] tracking-tight"
             >
               Your idea. <br />
               <span className="italic font-light text-canvas/90">My canvas.</span>
@@ -41,7 +41,7 @@ export function CommissionCTA() {
               whileInView="visible"
               viewport={{ once: true, margin: '-50px' }}
               custom={{ delay: 0.2 }}
-              className="mt-6 sm:mt-8 text-base sm:text-xl text-canvas/80 font-light leading-relaxed max-w-xl"
+              className="mt-4 sm:mt-8 text-sm sm:text-lg md:text-xl text-canvas/80 font-light leading-relaxed max-w-xl"
             >
               Let&apos;s create something that doesn&apos;t exist yet. Whether you are an individual collector seeking a deeply personal heirloom or an architect designing an extraordinary space.
             </motion.p>
@@ -52,13 +52,13 @@ export function CommissionCTA() {
               whileInView="visible"
               viewport={{ once: true, margin: '-50px' }}
               custom={{ delay: 0.3 }}
-              className="mt-10 sm:mt-12 flex flex-wrap items-center gap-6"
+              className="mt-8 sm:mt-12 flex flex-col xs:flex-row items-stretch xs:items-center gap-3 sm:gap-6"
             >
               <Button
                 href="/commission"
                 variant="secondary"
                 size="lg"
-                className="bg-canvas text-charcoal hover:bg-canvas-subtle border-none"
+                className="bg-canvas text-charcoal hover:bg-canvas-subtle border-none text-center justify-center"
               >
                 Commission an artwork
               </Button>
@@ -66,7 +66,7 @@ export function CommissionCTA() {
                 href="/contact"
                 variant="outline"
                 size="lg"
-                className="text-canvas border-canvas/40 hover:border-canvas hover:bg-canvas/10"
+                className="text-canvas border-canvas/40 hover:border-canvas hover:bg-canvas/10 text-center justify-center"
               >
                 Schedule a consultation
               </Button>

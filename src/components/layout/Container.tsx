@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { cn } from '@/lib/utils';
 
 interface ContainerProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -23,7 +23,7 @@ export function Container({
   return (
     <div
       className={cn(
-        'mx-auto w-full px-5 sm:px-8 md:px-12 lg:px-16 xl:px-20',
+        'mx-auto w-full px-4 sm:px-6 md:px-10 lg:px-14 xl:px-18',
         sizeClasses[size],
         className
       )}

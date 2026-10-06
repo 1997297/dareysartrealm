@@ -197,7 +197,7 @@ export default function LoginPage() {
       </div>
 
       {/* RIGHT: CALM LOGIN FORM */}
-      <div className="lg:col-span-6 flex items-center justify-center p-6 sm:p-12 md:p-16 pt-32 lg:pt-16">
+      <div className="lg:col-span-6 flex items-center justify-center px-4 xs:px-6 sm:p-12 md:p-16 pt-24 sm:pt-32 lg:pt-16">
         <Suspense fallback={
           <div className="w-8 h-8 rounded-full border-2 border-charcoal border-t-transparent animate-spin" />
         }>

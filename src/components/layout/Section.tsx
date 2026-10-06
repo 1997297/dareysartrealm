@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { cn } from '@/lib/utils';
 
 interface SectionProps extends React.HTMLAttributes<HTMLElement> {
@@ -18,10 +18,10 @@ export function Section({
 }: SectionProps) {
   const spacingClasses = {
     none: 'py-0',
-    sm: 'py-12 md:py-16',
-    default: 'py-20 md:py-28 lg:py-32',
-    lg: 'py-28 md:py-36 lg:py-44',
-    xl: 'py-36 md:py-48 lg:py-56',
+    sm: 'py-8 sm:py-12 md:py-16',
+    default: 'py-14 sm:py-20 md:py-24 lg:py-28',
+    lg: 'py-16 sm:py-24 md:py-32 lg:py-40',
+    xl: 'py-20 sm:py-32 md:py-40 lg:py-48',
   };
 
   const backgroundClasses = {

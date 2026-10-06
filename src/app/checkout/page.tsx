@@ -33,10 +33,10 @@ import { formatPrice, formatDimensionsWithInches } from '@/lib/utils';
 import { safeLocalStorage, STORAGE_KEYS } from '@/lib/storage';
 
 const CHECKOUT_STEPS = [
-  'Collector',
-  'Delivery',
-  'Payment',
-  'Review & Confirm',
+  { full: 'Collector', short: 'Collector' },
+  { full: 'Delivery', short: 'Delivery' },
+  { full: 'Payment', short: 'Payment' },
+  { full: 'Review & Confirm', short: 'Review' },
 ];
 
 export default function CheckoutPage() {
@@ -304,13 +304,13 @@ export default function CheckoutPage() {
             {/* STEP PROGRESS BAR */}
             <div className="border border-canvas-border rounded-sm p-4 bg-canvas-subtle/50">
               <div className="grid grid-cols-4 gap-2">
-                {CHECKOUT_STEPS.map((stepName, idx) => {
+                {CHECKOUT_STEPS.map((step, idx) => {
                   const stepNum = idx + 1;
                   const isCurrent = stepNum === currentStep;
                   const isDone = stepNum < currentStep;
 
                   return (
-                    <div key={stepName} className="space-y-1">
+                    <div key={step.full} className="space-y-1">
                       <div
                         className={`h-1 w-full rounded-full transition-colors ${
                           isDone
@@ -329,7 +329,8 @@ export default function CheckoutPage() {
                             : 'text-charcoal-muted'
                         }`}
                       >
-                        0{stepNum} {stepName}
+                        <span className="hidden sm:inline">0{stepNum} {step.full}</span>
+                        <span className="sm:hidden">{step.short}</span>
                       </p>
                     </div>
                   );
@@ -364,7 +365,7 @@ export default function CheckoutPage() {
 
             {/* STEP 1: COLLECTOR */}
             {currentStep === 1 && (
-              <div className="p-6 sm:p-8 border border-canvas-border rounded-sm bg-canvas space-y-6">
+              <div className="p-4 xs:p-6 sm:p-8 border border-canvas-border rounded-sm bg-canvas space-y-6">
                 <div>
                   <span className="text-[10px] uppercase tracking-gallery font-semibold text-accent block">
                     Step 01
@@ -455,7 +456,7 @@ export default function CheckoutPage() {
 
             {/* STEP 2: DELIVERY */}
             {currentStep === 2 && (
-              <div className="p-6 sm:p-8 border border-canvas-border rounded-sm bg-canvas space-y-6">
+              <div className="p-4 xs:p-6 sm:p-8 border border-canvas-border rounded-sm bg-canvas space-y-6">
                 <div>
                   <span className="text-[10px] uppercase tracking-gallery font-semibold text-accent block">
                     Step 02
@@ -624,7 +625,7 @@ export default function CheckoutPage() {
 
             {/* STEP 3: PAYMENT METHOD */}
             {currentStep === 3 && (
-              <div className="p-6 sm:p-8 border border-canvas-border rounded-sm bg-canvas space-y-6">
+              <div className="p-4 xs:p-6 sm:p-8 border border-canvas-border rounded-sm bg-canvas space-y-6">
                 <div>
                   <span className="text-[10px] uppercase tracking-gallery font-semibold text-accent block">
                     Step 03
@@ -734,7 +735,7 @@ export default function CheckoutPage() {
 
             {/* STEP 4: REVIEW & CONFIRM */}
             {currentStep === 4 && (
-              <div className="p-6 sm:p-8 border border-canvas-border rounded-sm bg-canvas space-y-6">
+              <div className="p-4 xs:p-6 sm:p-8 border border-canvas-border rounded-sm bg-canvas space-y-6">
                 <div>
                   <span className="text-[10px] uppercase tracking-gallery font-semibold text-accent block">
                     Step 04

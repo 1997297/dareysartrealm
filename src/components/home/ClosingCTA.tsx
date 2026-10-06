@@ -17,21 +17,21 @@ export function ClosingCTA() {
           whileInView="visible"
           viewport={{ once: true, margin: '-50px' }}
         >
-          <h2 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-charcoal font-normal leading-[1.14] sm:leading-[1.08] tracking-tight">
+          <h2 className="font-display text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-charcoal font-normal leading-[1.12] sm:leading-[1.08] tracking-tight">
             There&apos;s always <br />
             room for <br />
             <span className="italic font-light text-charcoal/85">another story.</span>
           </h2>
 
-          <p className="mt-8 text-base sm:text-lg text-charcoal-muted font-light leading-relaxed max-w-xl mx-auto">
+          <p className="mt-6 sm:mt-8 text-sm sm:text-base md:text-lg text-charcoal-muted font-light leading-relaxed max-w-xl mx-auto">
             Whether inquiring about an existing original, requesting an authenticity inquiry, or commissioning a tailored piece for your sanctuary.
           </p>
 
-          <div className="mt-10 sm:mt-12 flex flex-wrap items-center justify-center gap-6">
-            <Button href="/commission" variant="primary" size="lg">
+          <div className="mt-8 sm:mt-12 flex flex-col xs:flex-row items-stretch xs:items-center justify-center gap-3 sm:gap-6">
+            <Button href="/commission" variant="primary" size="lg" className="text-center justify-center">
               Start yours
             </Button>
-            <Button href="/contact" variant="outline" size="lg">
+            <Button href="/contact" variant="outline" size="lg" className="text-center justify-center">
               Contact the studio
             </Button>
           </div>

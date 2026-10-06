@@ -340,9 +340,11 @@ export default function StudioArtworksPage() {
                     <span>{art.artworkId}</span>
                     <span>{art.year}</span>
                   </div>
-                  <h3 className="font-display text-base font-semibold text-charcoal leading-snug line-clamp-1 mt-0.5">
-                    {art.title}
-                  </h3>
+                  <Link href={`/studio/artworks/${art.id}`} className="hover:underline block">
+                    <h3 className="font-display text-base font-semibold text-charcoal leading-snug line-clamp-1 mt-0.5">
+                      {art.title}
+                    </h3>
+                  </Link>
                   <p className="text-xs text-charcoal-muted line-clamp-1 font-sans">
                     {art.medium}
                   </p>
@@ -359,16 +361,23 @@ export default function StudioArtworksPage() {
                   </p>
 
                   <div className="flex items-center gap-1 text-charcoal-muted">
+                    <Link
+                      href={`/studio/artworks/${art.id}`}
+                      className="p-1.5 hover:text-charcoal rounded hover:bg-canvas-subtle touch-target flex items-center justify-center"
+                      title="Edit artwork dossier"
+                    >
+                      <Edit className="w-3.5 h-3.5" />
+                    </Link>
                     <button
                       onClick={() => handleDuplicate(art)}
-                      className="p-1 hover:text-charcoal rounded hover:bg-canvas-subtle"
+                      className="p-1.5 hover:text-charcoal rounded hover:bg-canvas-subtle touch-target flex items-center justify-center"
                       title="Duplicate as draft"
                     >
                       <Copy className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => setArchiveTarget(art)}
-                      className="p-1 hover:text-rose-600 rounded hover:bg-canvas-subtle"
+                      className="p-1.5 hover:text-rose-600 rounded hover:bg-canvas-subtle touch-target flex items-center justify-center"
                       title="Archive artwork"
                     >
                       <Archive className="w-3.5 h-3.5" />

@@ -49,10 +49,12 @@ export function CollectedWorks({ collectedArtworks }: CollectedWorksProps) {
                 className="relative aspect-[4/3] w-full overflow-hidden bg-canvas-muted block"
                 data-cursor="VIEW"
               >
-                <img
+                <Image
                   src={artwork.coverImage.url}
                   alt={artwork.title}
-                  className="w-full h-full object-cover transition-transform duration-700 ease-artistic group-hover:scale-105"
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  className="object-cover transition-transform duration-700 ease-artistic group-hover:scale-105"
                 />
                 <span className="absolute top-3 left-3 px-2.5 py-1 bg-charcoal/90 text-canvas text-[0.625rem] tracking-gallery uppercase font-semibold rounded-md backdrop-blur-xs">
                   Collected

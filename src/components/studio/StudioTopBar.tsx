@@ -177,7 +177,7 @@ export function StudioTopBar({ onOpenSearch, onOpenMobileMenu }: StudioTopBarPro
           </button>
 
           {notifsOpen && (
-            <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-canvas rounded-2xl border border-canvas-border shadow-elevated overflow-hidden z-40 animate-in fade-in-0 zoom-in-95 duration-150">
+            <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] max-w-sm sm:w-96 bg-canvas rounded-2xl border border-canvas-border shadow-elevated overflow-hidden z-40 animate-in fade-in-0 zoom-in-95 duration-150">
               <div className="p-3 border-b border-canvas-border flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="font-display text-sm font-semibold text-charcoal">

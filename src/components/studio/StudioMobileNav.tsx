@@ -22,13 +22,14 @@ export function StudioMobileNav({ isOpen, onClose }: StudioMobileNavProps) {
 
       {/* Drawer */}
       <div className="relative w-72 max-w-[85vw] bg-canvas-subtle h-full shadow-2xl z-10 flex flex-col animate-in slide-in-from-left duration-200">
-        <div className="p-4 border-b border-canvas-border flex items-center justify-between">
+        <div className="p-4 pt-safe border-b border-canvas-border flex items-center justify-between">
           <span className="font-display text-sm font-semibold tracking-wide text-charcoal">
             NAVIGATION
           </span>
           <button
             onClick={onClose}
-            className="p-1.5 text-charcoal-muted hover:text-charcoal rounded-lg hover:bg-canvas"
+            className="p-2 touch-target flex items-center justify-center text-charcoal-muted hover:text-charcoal rounded-lg hover:bg-canvas"
+            aria-label="Close navigation"
           >
             <X className="w-5 h-5" />
           </button>

@@ -13,7 +13,7 @@ interface HeroSectionProps {
 
 export function HeroSection({ heroArtwork }: HeroSectionProps) {
   return (
-    <section className="relative min-h-[92vh] sm:min-h-screen w-full flex flex-col justify-between pt-28 sm:pt-32 md:pt-36 pb-12 sm:pb-16 overflow-hidden bg-charcoal">
+    <section className="relative min-h-[90vh] min-h-[90dvh] sm:min-h-screen w-full flex flex-col justify-between pt-24 sm:pt-28 md:pt-36 pb-10 sm:pb-16 overflow-hidden bg-charcoal">
       {/* Full-Bleed Painting Artwork Background */}
       <div className="absolute inset-0 z-0 select-none overflow-hidden">
         <Image
@@ -25,14 +25,14 @@ export function HeroSection({ heroArtwork }: HeroSectionProps) {
           className="object-cover object-center scale-[1.03] transition-transform duration-1000 ease-out"
         />
         {/* Directional overlay: strong on left (text side), fades toward right (artwork side) */}
-        <div className="absolute inset-0 bg-gradient-to-r from-stone-950/90 via-stone-950/55 to-stone-950/10" />
+        <div className="absolute inset-0 bg-gradient-to-r from-stone-950/95 via-stone-950/70 sm:via-stone-950/55 to-stone-950/20 sm:to-stone-950/10" />
         {/* Bottom vignette for base legibility */}
-        <div className="absolute inset-0 bg-gradient-to-t from-stone-950/70 via-transparent to-stone-950/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent to-stone-950/30" />
       </div>
 
       {/* Hero Content */}
-      <div className="relative z-10 mx-auto w-full max-w-[94rem] px-5 sm:px-8 md:px-12 lg:px-16 my-auto">
-        <div className="max-w-2xl xl:max-w-3xl flex flex-col justify-center pt-4 lg:pt-0">
+      <div className="relative z-10 mx-auto w-full max-w-[94rem] px-4 sm:px-6 md:px-10 lg:px-14 xl:px-18 my-auto">
+        <div className="max-w-2xl xl:max-w-3xl flex flex-col justify-center pt-2 sm:pt-4 lg:pt-0">
 
           {/* Display headline — Fraunces editorial serif with balanced line height */}
           <motion.h1
@@ -40,7 +40,7 @@ export function HeroSection({ heroArtwork }: HeroSectionProps) {
             initial="hidden"
             animate="visible"
             custom={{ delay: 0.2 }}
-            className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-[7.25rem] text-canvas font-normal leading-[1.1] sm:leading-[1.06] tracking-tight"
+            className="font-display text-4xl xs:text-[2.65rem] sm:text-6xl md:text-7xl lg:text-8xl xl:text-[7.25rem] text-canvas font-normal leading-[1.08] sm:leading-[1.06] tracking-tight"
           >
             Welcome to
             <br />
@@ -53,7 +53,7 @@ export function HeroSection({ heroArtwork }: HeroSectionProps) {
             initial="hidden"
             animate="visible"
             custom={{ delay: 0.35 }}
-            className="mt-6 sm:mt-8 max-w-lg text-base sm:text-lg text-canvas/80 font-light leading-relaxed drop-shadow-sm"
+            className="mt-4 sm:mt-8 max-w-lg text-sm sm:text-base md:text-lg text-canvas/80 font-light leading-relaxed drop-shadow-sm"
           >
             Original artworks, monumental commissions, and tactile expressions
             crafted by Darey. An exploration of African memory, perseverance,
@@ -66,13 +66,13 @@ export function HeroSection({ heroArtwork }: HeroSectionProps) {
             initial="hidden"
             animate="visible"
             custom={{ delay: 0.45 }}
-            className="mt-8 sm:mt-10 flex flex-wrap items-center gap-4 sm:gap-6"
+            className="mt-6 sm:mt-10 flex flex-col xs:flex-row items-stretch xs:items-center gap-3 sm:gap-6"
           >
             <Button
               href="#selected-works"
               variant="secondary"
               size="lg"
-              className="bg-canvas text-charcoal hover:bg-canvas-subtle rounded-xl font-medium border-none shadow-gallery"
+              className="bg-canvas text-charcoal hover:bg-canvas-subtle rounded-xl font-medium border-none shadow-gallery text-center justify-center"
             >
               Explore the Artrealm
             </Button>
@@ -80,7 +80,7 @@ export function HeroSection({ heroArtwork }: HeroSectionProps) {
               href="/commission"
               variant="outline"
               size="lg"
-              className="text-canvas border-canvas/40 hover:border-canvas hover:bg-canvas/10 rounded-xl"
+              className="text-canvas border-canvas/40 hover:border-canvas hover:bg-canvas/10 rounded-xl text-center justify-center"
             >
               Commission a piece
             </Button>

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
@@ -125,19 +125,19 @@ export function ArtworkViewer({
       role="dialog"
       aria-modal="true"
       aria-label={`Fullscreen viewer for ${artworkTitle}`}
-      className="fixed inset-0 z-50 flex flex-col bg-[#0F0E0D]/95 backdrop-blur-xl text-canvas select-none"
+      className="fixed inset-0 z-50 flex flex-col bg-[#0F0E0D]/95 backdrop-blur-xl text-canvas select-none pt-safe pb-safe"
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
       {/* Top Header / Bar */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 z-10">
-        <div>
-          <h2 className="font-display text-lg sm:text-xl font-normal text-white">
+      <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-white/10 z-10 gap-3">
+        <div className="min-w-0 flex-1">
+          <h2 className="font-display text-base sm:text-xl font-normal text-white truncate">
             {artworkTitle}
           </h2>
-          <span className="font-sans text-xs text-white/60 tracking-gallery">
-            {currentIndex + 1} / {images.length} {currentImage.type ? `â€¢ ${currentImage.type.toUpperCase()}` : ''}
+          <span className="font-sans text-[0.6875rem] sm:text-xs text-white/60 tracking-gallery block truncate">
+            {currentIndex + 1} / {images.length} {currentImage.type ? `• ${currentImage.type.toUpperCase()}` : ''}
           </span>
         </div>
 
@@ -235,10 +235,10 @@ export function ArtworkViewer({
       </div>
 
       {/* Bottom Thumbnail Strip & Caption */}
-      <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-3 border-t border-white/10 bg-black/40 gap-3">
-        <p className="font-sans text-xs text-white/70 italic text-center sm:text-left">
+      <div className="flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-3 border-t border-white/10 bg-black/60 gap-3 pb-safe">
+        <p className="font-sans text-[0.6875rem] sm:text-xs text-white/70 italic text-center sm:text-left">
           {currentImage.caption || `Detail inspection: ${artworkTitle}`}
-          {scale > 1 && ' â€¢ Drag to pan across details'}
+          {scale > 1 && ' • Drag to pan across details'}
         </p>
 
         {images.length > 1 && (

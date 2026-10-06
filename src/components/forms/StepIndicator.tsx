@@ -38,8 +38,8 @@ export const StepIndicator: React.FC<StepIndicatorProps> = ({
         />
       </div>
 
-      {/* Discrete step dots / labels on desktop */}
-      <div className="hidden sm:grid grid-cols-7 gap-2 pt-1">
+      {/* Discrete step dots / labels on desktop & tablet */}
+      <div className="hidden md:grid grid-cols-5 gap-2 pt-1">
         {stepNames.map((name, index) => {
           const stepNum = index + 1;
           const isCompleted = stepNum < currentStep;

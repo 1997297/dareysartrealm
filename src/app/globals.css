@@ -20,7 +20,19 @@
     background-color: #FAF8F5;
     color: #141413;
     min-height: 100vh;
+    min-height: 100dvh;
     overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Prevent automatic iOS Safari text zoom on inputs with font-size < 16px */
+  input, textarea, select {
+    font-size: 16px;
+  }
+  @media (min-width: 640px) {
+    input, textarea, select {
+      font-size: 0.875rem; /* 14px on sm+ screens */
+    }
   }
 
   ::selection {
@@ -38,6 +50,8 @@
   h1, h2, h3, h4, .font-display {
     font-family: var(--font-display), Georgia, 'Palatino Linotype', serif;
     font-feature-settings: "liga" 1, "kern" 1;
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
 }
 
@@ -83,6 +97,26 @@
 
   .animate-marquee-infinite:hover {
     animation-play-state: paused;
+  }
+
+  /* iOS Safe Area Padding Utilities */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .mb-safe {
+    margin-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Minimum touch target utility (44px) */
+  .touch-target {
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 

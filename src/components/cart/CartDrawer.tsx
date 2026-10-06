@@ -174,7 +174,7 @@ export const CartDrawer: React.FC = () => {
 
             {/* Footer Summary & CTAs */}
             {isMounted && itemCount > 0 && (
-              <div className="border-t border-canvas-border p-6 bg-canvas-subtle/50 space-y-4">
+              <div className="border-t border-canvas-border p-5 sm:p-6 bg-canvas-subtle/50 space-y-4 pb-safe">
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-xs text-charcoal-muted uppercase tracking-gallery">
                     <span>Acquisition Subtotal</span>
@@ -187,7 +187,7 @@ export const CartDrawer: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="space-y-2 pt-1">
+                <div className="space-y-2 pt-1 pb-2">
                   <Button
                     href="/checkout"
                     onClick={closeCart}

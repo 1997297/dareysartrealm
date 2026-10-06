@@ -82,7 +82,7 @@ export const AccountShell: React.FC<{
         </div>
 
         {/* Mobile Navigation Horizontal Scroll */}
-        <div className="lg:hidden mb-8 overflow-x-auto pb-2 flex gap-2 border-b border-canvas-border">
+        <div className="lg:hidden mb-8 -mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto pb-3 pt-1 flex gap-2 border-b border-canvas-border scrollbar-none">
           {NAV_LINKS.map((link) => {
             const isActive = pathname === link.href;
             const Icon = link.icon;
@@ -90,7 +90,7 @@ export const AccountShell: React.FC<{
               <Link
                 key={link.href}
                 href={link.href}
-                className={`whitespace-nowrap px-3.5 py-2 text-xs rounded-sm transition-colors flex items-center gap-1.5 ${
+                className={`shrink-0 whitespace-nowrap px-3.5 py-2 text-xs rounded-sm transition-colors flex items-center gap-1.5 min-h-[38px] ${
                   isActive
                     ? 'bg-charcoal text-canvas font-medium'
                     : 'bg-canvas-subtle text-charcoal hover:bg-canvas-muted'

@@ -75,10 +75,10 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
       role="dialog"
       aria-modal="true"
       aria-label="Search the Artrealm"
-      className="fixed inset-0 z-50 flex flex-col bg-canvas/98 backdrop-blur-xl animate-in fade-in duration-300"
+      className="fixed inset-0 z-50 flex flex-col bg-canvas/98 backdrop-blur-xl animate-in fade-in duration-300 pt-safe pb-safe"
     >
       {/* Search Header Bar */}
-      <div className="w-full max-w-5xl mx-auto px-6 py-6 sm:py-8 flex items-center justify-between border-b border-canvas-border">
+      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-8 flex items-center justify-between border-b border-canvas-border">
         <div className="flex items-center gap-3 sm:gap-4 flex-1">
           <Search className="h-5 w-5 sm:h-6 sm:w-6 text-charcoal flex-shrink-0" />
           <input

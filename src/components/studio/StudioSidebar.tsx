@@ -256,7 +256,7 @@ export function StudioSidebar({ onItemClick, className }: StudioSidebarProps) {
       </div>
 
       {/* Bottom Footer: External Link & Admin Profile */}
-      <div className="p-3 border-t border-canvas-border/80 bg-canvas space-y-2">
+      <div className="p-3 pb-safe border-t border-canvas-border/80 bg-canvas space-y-2">
         <Link
           href="/"
           target="_blank"

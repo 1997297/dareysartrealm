@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useEffect } from 'react';
 import { X, RotateCcw, Check } from 'lucide-react';
@@ -87,16 +87,16 @@ export function FilterDrawer({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-md sm:max-w-lg bg-canvas h-full shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-300 border-l border-canvas-border"
+        className="relative w-full max-w-md sm:max-w-lg bg-canvas h-full max-h-screen shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-300 border-l border-canvas-border"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-canvas-border bg-canvas-paper">
+        <div className="flex items-center justify-between px-5 sm:px-6 py-4 sm:py-5 border-b border-canvas-border bg-canvas-paper">
           <div>
             <span className="gallery-plaque text-[0.625rem] text-charcoal-subtle uppercase tracking-gallery">
               EXHIBITION CONTROLS
             </span>
-            <h2 id="filter-drawer-title" className="font-display text-2xl text-charcoal">
+            <h2 id="filter-drawer-title" className="font-display text-xl sm:text-2xl text-charcoal">
               Filter Artworks
             </h2>
           </div>
@@ -270,17 +270,17 @@ export function FilterDrawer({
         </div>
 
         {/* Footer Actions */}
-        <div className="p-6 border-t border-canvas-border bg-canvas-paper flex items-center justify-between gap-4">
+        <div className="p-4 sm:p-6 border-t border-canvas-border bg-canvas-paper flex items-center justify-between gap-4 pb-safe">
           <button
             type="button"
             onClick={onReset}
-            className="flex items-center gap-1.5 text-xs font-sans uppercase tracking-gallery text-charcoal-muted hover:text-charcoal transition-colors"
+            className="flex items-center gap-1.5 text-xs font-sans uppercase tracking-gallery text-charcoal-muted hover:text-charcoal transition-colors py-2"
           >
             <RotateCcw className="h-3.5 w-3.5" />
             <span>Reset All</span>
           </button>
 
-          <Button onClick={onClose} variant="primary" size="md">
+          <Button onClick={onClose} variant="primary" size="md" className="text-xs">
             Show {totalResultsCount} {totalResultsCount === 1 ? 'Artwork' : 'Artworks'}
           </Button>
         </div>

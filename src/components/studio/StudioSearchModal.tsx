@@ -105,7 +105,7 @@ export function StudioSearchModal({ isOpen, onClose }: StudioSearchModalProps) {
     filteredEnquiries.length;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4">
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-3 xs:px-4 pt-safe pb-safe">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-stone-950/60 backdrop-blur-sm transition-opacity"
