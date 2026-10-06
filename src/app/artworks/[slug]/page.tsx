@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useParams, notFound } from 'next/navigation';
+import { useParams, notFound, useSearchParams } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   ArrowLeft,
   Maximize2,
@@ -33,7 +34,10 @@ import { formatDimensionsWithInches, formatPrice, cn } from '@/lib/utils';
 
 export default function ArtworkDetailPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const slug = params?.slug as string;
+  const isPreview = searchParams.get('preview') === 'true';
+  const { isAdmin } = useAuth();
 
   const [artwork, setArtwork] = useState<Artwork | null>(null);
   const [relatedArtworks, setRelatedArtworks] = useState<Artwork[]>([]);
@@ -62,15 +66,24 @@ export default function ArtworkDetailPage() {
         setArtwork(null);
         return;
       }
+
+      // If draft or archived, only allow if authenticated admin in preview mode
+      const isUnpublished = data.publicationStatus === 'draft' || data.publicationStatus === 'archived';
+      if (isUnpublished && !(isAdmin && isPreview)) {
+        setIsLoading(false);
+        setArtwork(null);
+        return;
+      }
+
       setArtwork(data);
       const related = await artworkService.getRelated(data.id, 3);
-      setRelatedArtworks(related);
+      setRelatedArtworks(related.filter((r) => r.publicationStatus === 'published' || r.publicationStatus === undefined));
       setIsLoading(false);
     }
     if (slug) {
       loadArtworkData();
     }
-  }, [slug]);
+  }, [slug, isAdmin, isPreview]);
 
   const handleShare = () => {
     if (typeof window !== 'undefined') {
@@ -121,6 +134,11 @@ export default function ArtworkDetailPage() {
 
   return (
     <div className="pt-24 sm:pt-28 md:pt-32 bg-canvas">
+      {isAdmin && isPreview && artwork.publicationStatus !== 'published' && (
+        <div className="bg-amber-500/10 border-b border-amber-500/20 py-2.5 px-4 text-center text-xs font-mono text-amber-900">
+          Studio Administrator Preview &bull; {artwork.publicationStatus?.toUpperCase()} (Hidden from public visitors)
+        </div>
+      )}
       {/* Top Breadcrumb Navigation & Share / Save Utilities */}
       <div className="border-b border-canvas-border py-4">
         <Container size="wide">

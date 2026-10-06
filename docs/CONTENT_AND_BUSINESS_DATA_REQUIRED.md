@@ -28,15 +28,18 @@ Before public deployment, all simulated data, placeholder text, and sample recor
 
 ---
 
-## 3. Artwork Inventory & High-Resolution Photography
+## 3. Artwork Inventory & High-Resolution Photography (BACKEND READY — ASSETS REQUIRED)
+
+> [!NOTE]
+> Phase 7B has deployed the PostgreSQL tables (`artworks`, `artwork_images`, `collections`, `media_assets`) and Supabase Storage buckets (`artworks-public`, `artworks-private`). Studio staff can now directly upload and catalog physical pieces through the Artrealm Studio at `/studio/artworks/new`.
 
 | Item Required | Specifications Needed | Status / Action Needed |
 | :--- | :--- | :--- |
 | **Artwork Titles & Slugs** | Descriptive titles matching physical canvases (e.g., `Echoes of Home`, `Ancestral Horizon`) | Provide verified list of canvas titles and confirmation of internal studio numbers. |
 | **Exact Physical Dimensions** | Width × Height × Depth in centimeters and inches (e.g., `120 × 90 × 4.5 cm`) | Measure each canvas precisely including stretcher bar depth. |
 | **Medium & Substrate Description** | Exact composition (e.g., `Heavy impasto oil, raw mineral pigments, and gold leaf on Belgian linen canvas`) | Provide detailed material breakdown for museum-grade provenance documentation. |
-| **High-Resolution Photography** | Minimum 4000px on long edge, color-calibrated (sRGB / Adobe RGB), glare-free studio lighting | High-resolution files for full-screen zoom and canvas texture inspection. |
-| **Detail / Texture Angle Shots** | Close-up macro photographs showing impasto knife relief and canvas corners (3-5 per artwork) | Required for detail gallery on `/artworks/[slug]`. |
+| **High-Resolution Photography** | Minimum 4000px on long edge, color-calibrated (sRGB / Adobe RGB), glare-free studio lighting | Upload via `/studio/artworks` or `/studio/media` to `artworks-public`. Master TIFFs go to `artworks-private`. |
+| **Detail / Texture Angle Shots** | Close-up macro photographs showing impasto knife relief and canvas corners (3-5 per artwork) | Required for detail gallery on `/artworks/[slug]`. Classified as `detail`, `texture`, `angle`. |
 | **Pricing & Currency** | Exact sale price per available artwork, or designation as `Price on Request` | Confirm pricing matrix in USD and local currency (NGN). |
 | **Artwork Status Ledger** | Flag each canvas as `available`, `reserved`, or `sold` | Confirm which existing pieces have already been collected into private hands. |
 

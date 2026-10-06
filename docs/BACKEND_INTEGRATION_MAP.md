@@ -26,18 +26,24 @@ This document establishes the official integration blueprint for transitioning t
 
 ---
 
-## 2. Artworks & Collections Catalog
+## 2. Artworks & Collections Catalog (STATUS: IMPLEMENTED IN PHASE 7B)
 
-**Target Service:** Supabase Database (PostgreSQL) + Supabase Storage  
-**Current Frontend Abstraction:** `src/data/mockArtworks.ts`, `src/services/artworkService.ts`, `src/types/artwork.ts`
+**Target Service:** Supabase Database (PostgreSQL) + Supabase Storage (`artworks-public`, `artworks-private`)  
+**Implementation Files:**
+- Database Migration: `supabase/migrations/20261006000002_create_artworks_collections_and_media.sql`
+- Types: `src/types/supabase.ts`, `src/types/artwork.ts`, `src/types/collection.ts`, `src/types/media.ts`
+- Production Services: `src/services/artworkService.ts`, `src/services/collectionService.ts`, `src/services/mediaService.ts`
+- Studio Management: `src/components/studio/ArtworkEditor.tsx`, `src/components/studio/CollectionEditor.tsx`, `src/app/studio/media/page.tsx`
+- Documentation: `docs/PHASE_7B_ARTWORK_DATA_AND_STORAGE.md`
 
-| Touchpoint | Current Simulation | Target Backend Route / Query | Schema Requirements |
+| Touchpoint | Implementation Status | Target Backend Route / Query | Security & Schema Enforcement |
 | :--- | :--- | :--- | :--- |
-| **Public Catalog** (`/artworks`, `/artworks/[slug]`) | Static memory array with local filtering & sort | `supabase.from('artworks').select('*, collection:collections(*), images:artwork_images(*)').eq('status', 'available')` | Table `artworks`: `id`, `slug`, `title`, `year`, `medium`, `price`, `currency`, `width`, `height`, `depth`, `status`, `featured`, `curator_note`, `provenance`. |
-| **Curated Collections** (`/collections`, `/collections/[slug]`) | Static memory array | `supabase.from('collections').select('*, artworks(*)')` | Table `collections`: `id`, `slug`, `title`, `description`, `curatorial_statement`, `cover_image_url`, `artwork_count`. |
-| **Artwork Detail & High-Res Zoom** (`/artworks/[slug]`) | Single high-res local asset | Supabase Storage bucket `artworks-highres` (signed URLs or CDN cache) | CDN image optimization with Next.js Image loader or Cloudflare Images. |
-| **Studio Artwork Management** (`/studio/artworks/*`) | Local memory state with mock CRUD | REST / GraphQL mutations: `supabase.from('artworks').insert()`, `.update()`, `.delete()` | Secured by admin RLS policy. Mutates status (`draft`, `available`, `reserved`, `sold`, `archived`). |
-| **Next.js Cache Invalidation** | Client re-render | Next.js Server Action / Route Handler with `revalidateTag('artworks')`, `revalidatePath('/artworks/[slug]')` | Webhook triggered on database mutation. |
+| **Public Catalog** (`/artworks`, `/artworks/[slug]`) | **LIVE** | `supabase.from('artworks').select('*, artwork_images(*), artwork_collections(...)').eq('publication_status', 'published')` | RLS policy restricts anonymous and collector queries strictly to `publication_status = 'published'`. Admins can preview drafts via `?preview=true`. |
+| **Curated Collections** (`/collections`, `/collections/[slug]`) | **LIVE** | `supabase.from('collections').select('*').eq('publication_status', 'published')` | Curatorial exhibition rooms. RLS restricts non-admins to published rooms. Junction table `artwork_collections` provides ordered relationships. |
+| **Artwork Images & Multi-Perspective Zoom** (`/artworks/[slug]`) | **LIVE** | `supabase.from('artwork_images').select('*').order('sort_order')` | Multi-perspective views (`primary`, `detail`, `texture`, `angle`, `framed`) stored in `public.artwork_images` pointing to Supabase Storage CDN URLs. |
+| **Supabase Storage Buckets** | **LIVE** | `artworks-public` (15MB max, public read, admin write) & `artworks-private` (100MB max, admin-only read/write) | Storage RLS ensures public assets can be rendered sitewide while private master high-res files require admin authorization. |
+| **Studio Artwork Management** (`/studio/artworks/*`) | **LIVE** | Direct CRUD via `artworkService` with sequential code generation (`DAR-YYYY-XXX`) | Strict admin RLS mutation policy (`public.is_admin() = true`). Validates medium, dimensions, price, and photography before publishing. |
+| **Studio Media Library** (`/studio/media`) | **LIVE** | Direct file upload via `mediaService.uploadFile()` to `artworks-public` with metadata stored in `public.media_assets` | Admin-only upload, metadata indexing, and deletion. |
 
 ---
 

@@ -16,11 +16,13 @@ import {
   Plus,
   Image as ImageIcon,
   ExternalLink,
+  Loader2,
 } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
 import { ConfirmationModal } from './ConfirmationModal';
 import { artworkService } from '@/services/artworkService';
 import { collectionService } from '@/services/collectionService';
+import { mediaService } from '@/services/mediaService';
 import { Artwork, ArtworkImage, ArtworkOrientation, ArtworkStatus, ArtworkImageType } from '@/types/artwork';
 import { Collection } from '@/types/collection';
 
@@ -96,9 +98,11 @@ export function ArtworkEditor({ initialArtwork, isNew = false }: ArtworkEditorPr
   // UI state
   const [isDirty, setIsDirty] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [archiveModalOpen, setArchiveModalOpen] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // Auto-generate slug from title if new
   useEffect(() => {
@@ -163,6 +167,41 @@ export function ArtworkEditor({ initialArtwork, isNew = false }: ArtworkEditorPr
     markDirty();
   }
 
+  async function handleRealUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploading(true);
+      const asset = await mediaService.uploadFile(file, {
+        title: `${title || 'Artwork'} - ${file.name}`,
+        category: 'artwork',
+        altText: `${title || 'Artwork'} photography by Darey`,
+      });
+
+      const newImg: ArtworkImage = {
+        id: asset.id,
+        url: asset.url,
+        alt: asset.altText || `${title || 'Artwork'} - view`,
+        width: asset.width || 1200,
+        height: asset.height || 900,
+        type: images.length === 0 ? 'primary' : 'detail',
+        isCover: images.length === 0,
+      };
+
+      setImages((prev) => [...prev, newImg]);
+      markDirty();
+      setFeedback('Media asset successfully uploaded to studio archive.');
+      setTimeout(() => setFeedback(null), 3000);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Upload failed';
+      alert(msg);
+    } finally {
+      setUploading(false);
+      if (e.target) e.target.value = '';
+    }
+  }
+
   function handleMockUpload() {
     const sampleOptions = [
       {
@@ -213,6 +252,30 @@ export function ArtworkEditor({ initialArtwork, isNew = false }: ArtworkEditorPr
       alert('Please provide an artwork identifier.');
       setActiveTab('core');
       return;
+    }
+
+    // Publish validation: ensure required physical and commercial fields exist
+    if (pubStatus === 'published') {
+      if (!medium.trim()) {
+        alert('Medium and materials are required before publishing.');
+        setActiveTab('physical');
+        return;
+      }
+      if (!width || !height) {
+        alert('Physical dimensions (width and height) are required before publishing.');
+        setActiveTab('physical');
+        return;
+      }
+      if (!isPriceOnRequest && (price === undefined || price <= 0)) {
+        alert('Artwork must have a valid price or be marked as "Price on Request" before publishing.');
+        setActiveTab('commerce');
+        return;
+      }
+      if (images.length === 0) {
+        alert('Artwork must have at least one image before publishing.');
+        setActiveTab('media');
+        return;
+      }
     }
 
     setSaving(true);
@@ -772,14 +835,33 @@ export function ArtworkEditor({ initialArtwork, isNew = false }: ArtworkEditorPr
                   Manage primary frontal capture, macro impasto details, framed mockups, and architectural installations.
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={handleMockUpload}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-charcoal text-canvas text-xs font-medium hover:bg-charcoal/90 transition-colors shadow-subtle shrink-0"
-              >
-                <Upload className="w-3.5 h-3.5" />
-                <span>Upload Media Asset</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleRealUpload}
+                  accept="image/jpeg,image/png,image/webp,image/avif"
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  disabled={uploading}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-charcoal text-canvas text-xs font-medium hover:bg-charcoal/90 disabled:opacity-50 transition-colors shadow-subtle shrink-0"
+                >
+                  {uploading ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Uploading to Storage...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>Upload Media Asset</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
 
             {/* Images Grid */}

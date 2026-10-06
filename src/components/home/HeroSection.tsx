@@ -8,17 +8,20 @@ import { Button } from '@/components/ui/Button';
 import { fadeUp, fadeIn } from '@/lib/motion';
 
 interface HeroSectionProps {
-  heroArtwork: Artwork;
+  heroArtwork?: Artwork | null;
 }
 
 export function HeroSection({ heroArtwork }: HeroSectionProps) {
+  const imageUrl = heroArtwork?.coverImage?.url || '/artworks/hero.jpeg';
+  const imageAlt = heroArtwork?.coverImage?.alt || heroArtwork?.title || "Darey's Artrealm - Contemporary Fine Art Atelier";
+
   return (
     <section className="relative min-h-[90vh] min-h-[90dvh] sm:min-h-screen w-full flex flex-col justify-between pt-24 sm:pt-28 md:pt-36 pb-10 sm:pb-16 overflow-hidden bg-charcoal">
       {/* Full-Bleed Painting Artwork Background */}
       <div className="absolute inset-0 z-0 select-none overflow-hidden">
         <Image
-          src={heroArtwork.coverImage.url}
-          alt={heroArtwork.coverImage.alt || heroArtwork.title}
+          src={imageUrl}
+          alt={imageAlt}
           fill
           priority
           sizes="100vw"

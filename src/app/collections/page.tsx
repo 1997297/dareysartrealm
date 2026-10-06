@@ -9,26 +9,28 @@ import { CollectionCard } from '@/components/collection/CollectionCard';
 import { ArtworkCard } from '@/components/artwork/ArtworkCard';
 import { collectionService } from '@/services/collectionService';
 import { artworkService } from '@/services/artworkService';
-import { MOCK_COLLECTIONS } from '@/data/mockCollections';
-import { MOCK_ARTWORKS } from '@/data/mockArtworks';
 import { Collection } from '@/types/collection';
 import { Artwork } from '@/types/artwork';
 import { cn } from '@/lib/utils';
 
 export default function CollectionsPage() {
-  const [collections, setCollections] = useState<Collection[]>(MOCK_COLLECTIONS);
-  const [allArtworks, setAllArtworks] = useState<Artwork[]>(MOCK_ARTWORKS);
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [allArtworks, setAllArtworks] = useState<Artwork[]>([]);
   const [selectedCollectionSlug, setSelectedCollectionSlug] = useState<string>('all');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
+      setIsLoading(true);
       const [cols, works] = await Promise.all([
         collectionService.getAll(),
         artworkService.getAll(),
       ]);
-      setCollections(cols);
-      setAllArtworks(works);
+      const pubCols = cols.filter((c) => c.visibility === 'published' || c.visibility === undefined);
+      const pubWorks = works.filter((w) => w.publicationStatus === 'published' || w.publicationStatus === undefined);
+      setCollections(pubCols);
+      setAllArtworks(pubWorks);
+      setIsLoading(false);
     }
     loadData();
   }, []);
@@ -230,14 +232,21 @@ export default function CollectionsPage() {
           </div>
 
           <div className="space-y-8 sm:space-y-12">
-            {collections.map((col, idx) => (
-              <CollectionCard
-                key={col.id}
-                collection={col}
-                priority={idx === 0}
-                variant={idx === 0 ? 'featured' : 'standard'}
-              />
-            ))}
+            {collections.length === 0 ? (
+              <div className="py-16 text-center border border-dashed border-canvas-border rounded-2xl p-8 max-w-lg mx-auto">
+                <p className="font-display text-xl text-charcoal mb-2">No collection series active.</p>
+                <p className="text-xs text-charcoal-muted">New curatorial portfolios are currently being organized in the studio.</p>
+              </div>
+            ) : (
+              collections.map((col, idx) => (
+                <CollectionCard
+                  key={col.id}
+                  collection={col}
+                  priority={idx === 0}
+                  variant={idx === 0 ? 'featured' : 'standard'}
+                />
+              ))
+            )}
           </div>
         </Container>
       </Section>

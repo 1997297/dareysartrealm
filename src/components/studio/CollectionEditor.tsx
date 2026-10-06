@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Save, Plus, Check, Trash2, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Check, Trash2, ExternalLink, Upload, Loader2 } from 'lucide-react';
 import { collectionService } from '@/services/collectionService';
 import { artworkService } from '@/services/artworkService';
+import { mediaService } from '@/services/mediaService';
 import { Collection } from '@/types/collection';
 import { Artwork } from '@/types/artwork';
 
@@ -30,7 +31,32 @@ export function CollectionEditor({ initialCollection, isNew = false }: Collectio
 
   const [allArtworks, setAllArtworks] = useState<Artwork[]>([]);
   const [saving, setSaving] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const coverInputRef = React.useRef<HTMLInputElement>(null);
+
+  async function handleCoverUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingCover(true);
+      const asset = await mediaService.uploadFile(file, {
+        title: `${title || 'Collection'} - Cover`,
+        category: 'website',
+        altText: `${title || 'Collection'} cover photography`,
+      });
+      setCoverImageUrl(asset.url);
+      setFeedback('Collection cover uploaded to studio storage.');
+      setTimeout(() => setFeedback(null), 3000);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Cover upload failed';
+      alert(msg);
+    } finally {
+      setUploadingCover(false);
+      if (e.target) e.target.value = '';
+    }
+  }
 
   useEffect(() => {
     async function loadArtworks() {
@@ -251,13 +277,41 @@ export function CollectionEditor({ initialCollection, isNew = false }: Collectio
           </div>
 
           <div>
-            <label className="block text-xs font-mono uppercase text-charcoal-subtle mb-1.5">
-              Cover Image URL
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-mono uppercase text-charcoal-subtle">
+                Cover Image
+              </label>
+              <input
+                type="file"
+                ref={coverInputRef}
+                onChange={handleCoverUpload}
+                accept="image/jpeg,image/png,image/webp,image/avif"
+                className="hidden"
+              />
+              <button
+                type="button"
+                disabled={uploadingCover}
+                onClick={() => coverInputRef.current?.click()}
+                className="inline-flex items-center gap-1.5 text-xs text-charcoal hover:underline disabled:opacity-50"
+              >
+                {uploadingCover ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Uploading...</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Upload Cover Asset</span>
+                  </>
+                )}
+              </button>
+            </div>
             <input
               type="text"
               value={coverImageUrl}
               onChange={(e) => setCoverImageUrl(e.target.value)}
+              placeholder="https://... or /artworks/..."
               className="w-full px-3.5 py-2.5 rounded-xl border border-canvas-border bg-canvas text-charcoal text-sm font-sans focus:outline-none focus:border-charcoal/40"
             />
             <div className="mt-2 aspect-[16/9] max-w-sm rounded-xl overflow-hidden bg-stone-100 border border-canvas-border">

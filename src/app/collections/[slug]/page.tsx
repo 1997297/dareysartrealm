@@ -25,7 +25,7 @@ export default function CollectionDetailPage() {
     async function loadCollectionData() {
       setIsLoading(true);
       const col = await collectionService.getBySlug(slug);
-      if (!col) {
+      if (!col || (col.visibility && col.visibility !== 'published')) {
         setIsLoading(false);
         setCollection(null);
         return;

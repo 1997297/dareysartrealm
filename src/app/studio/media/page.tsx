@@ -27,6 +27,7 @@ export default function StudioMediaPage() {
 
   // Upload simulation modal
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadCategory, setUploadCategory] = useState<MediaCategory>('artwork');
   const [uploadTitle, setUploadTitle] = useState('');
   const [uploadAlt, setUploadAlt] = useState('');
@@ -87,48 +88,63 @@ export default function StudioMediaPage() {
     showFeedback('Asset removed from studio archive.');
   }
 
-  async function handleMockUpload(e: React.FormEvent) {
+  async function handleUploadSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!uploadTitle.trim()) return;
 
     setIsUploading(true);
-    setUploadProgress(20);
+    setUploadProgress(25);
 
-    const sampleImages = [
-      '/artworks/hero.jpeg',
-      '/artworks/pic1.jpeg',
-      '/artworks/pic2.jpeg',
-      '/artworks/pic3.jpeg',
-      '/artworks/pic4.jpeg',
-    ];
+    try {
+      if (selectedFile) {
+        setUploadProgress(50);
+        const newAsset = await mediaService.uploadFile(selectedFile, {
+          title: uploadTitle.trim(),
+          category: uploadCategory,
+          altText: uploadAlt.trim() || uploadTitle.trim(),
+        });
+        setUploadProgress(100);
+        showFeedback(`Uploaded "${newAsset.title}" to storage.`);
+      } else {
+        const sampleImages = [
+          '/artworks/hero.jpeg',
+          '/artworks/pic1.jpeg',
+          '/artworks/pic2.jpeg',
+          '/artworks/pic3.jpeg',
+          '/artworks/pic4.jpeg',
+        ];
 
-    const pick = sampleImages[Math.floor(Math.random() * sampleImages.length)];
-
-    setTimeout(() => setUploadProgress(65), 250);
-
-    setTimeout(async () => {
-      setUploadProgress(100);
-      const newAsset = await mediaService.upload({
-        title: uploadTitle.trim(),
-        filename: `${uploadTitle.toLowerCase().replace(/\s+/g, '-')}.jpg`,
-        url: pick,
-        category: uploadCategory,
-        fileSize: Math.floor(2500000 + Math.random() * 2000000),
-        width: 2400,
-        height: 1800,
-        mimeType: 'image/jpeg',
-        altText: uploadAlt.trim() || uploadTitle.trim(),
-        caption: 'Studio archival capture',
-      });
+        const pick = sampleImages[Math.floor(Math.random() * sampleImages.length)];
+        setUploadProgress(65);
+        const newAsset = await mediaService.upload({
+          title: uploadTitle.trim(),
+          filename: `${uploadTitle.toLowerCase().replace(/\s+/g, '-')}.jpg`,
+          url: pick,
+          category: uploadCategory,
+          fileSize: Math.floor(2500000 + Math.random() * 2000000),
+          width: 2400,
+          height: 1800,
+          mimeType: 'image/jpeg',
+          altText: uploadAlt.trim() || uploadTitle.trim(),
+          caption: 'Studio archival capture',
+        });
+        setUploadProgress(100);
+        showFeedback(`Uploaded "${newAsset.title}".`);
+      }
 
       setIsUploading(false);
       setUploadProgress(0);
       setUploadModalOpen(false);
       setUploadTitle('');
       setUploadAlt('');
+      setSelectedFile(null);
       loadMedia();
-      showFeedback(`Uploaded "${newAsset.title}".`);
-    }, 600);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Upload failed';
+      alert(msg);
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
   }
 
   const filtered = assets.filter((a) => {
@@ -375,7 +391,27 @@ export default function StudioMediaPage() {
               Upload High-Resolution Asset
             </h3>
 
-            <form onSubmit={handleMockUpload} className="space-y-4">
+            <form onSubmit={handleUploadSubmit} className="space-y-4">
+              <div>
+                <label className="block text-[0.6875rem] font-mono uppercase text-charcoal-subtle mb-1">
+                  Upload Image File (Optional - or simulated sample)
+                </label>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/avif"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) {
+                      setSelectedFile(f);
+                      if (!uploadTitle) {
+                        setUploadTitle(f.name.replace(/\.[^/.]+$/, ''));
+                      }
+                    }
+                  }}
+                  className="w-full px-3 py-2 rounded-xl border border-canvas-border bg-canvas-subtle text-xs text-charcoal focus:outline-none file:mr-2.5 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[11px] file:bg-charcoal file:text-canvas cursor-pointer"
+                />
+              </div>
+
               <div>
                 <label className="block text-[0.6875rem] font-mono uppercase text-charcoal-subtle mb-1">
                   Asset Title *

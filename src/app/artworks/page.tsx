@@ -51,7 +51,9 @@ function ArtworksContent() {
   useEffect(() => {
     async function loadData() {
       const works = await artworkService.getAll();
-      setAllArtworks(works);
+      setAllArtworks(
+        works.filter((w) => w.publicationStatus === 'published' || !w.publicationStatus)
+      );
     }
     loadData();
   }, []);
