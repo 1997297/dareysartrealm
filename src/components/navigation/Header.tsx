@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, Search, Bookmark, ShoppingBag, UserCircle } from 'lucide-react';
+import { Menu, UserCircle } from 'lucide-react';
 import { NAV_ITEMS, SITE_NAME } from '@/lib/constants';
 import { NavLink } from './NavLink';
 import { MobileMenu } from './MobileMenu';
@@ -12,16 +12,12 @@ import { Logo } from '@/components/ui/Logo';
 import { useAuth } from '@/contexts/AuthContext';
 import { SearchOverlay } from '@/components/search/SearchOverlay';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
-import { useSavedArtworks } from '@/hooks/useSavedArtworks';
-import { useCart } from '@/contexts/CartContext';
 import { cn } from '@/lib/utils';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const { isScrolled } = useScrollPosition();
-  const { savedCount, isMounted } = useSavedArtworks();
-  const { openCart, itemCount } = useCart();
   const { isAuthenticated } = useAuth();
   const pathname = usePathname();
 
@@ -122,79 +118,8 @@ export function Header() {
           </nav>
 
           {/* Utility Actions & Primary CTA */}
-          <div className="flex items-center space-x-2 sm:space-x-4">
-            {/* Search Trigger */}
-            <button
-              type="button"
-              onClick={() => setSearchOpen(true)}
-              className={cn(
-                'p-2 transition-colors focus:outline-none focus-visible:ring-2 rounded-full',
-                isDarkHeader
-                  ? 'text-canvas hover:text-canvas/80 hover:bg-white/10 focus-visible:ring-canvas'
-                  : 'text-charcoal hover:text-charcoal-muted hover:bg-canvas-muted/50 focus-visible:ring-charcoal'
-              )}
-              aria-label="Open search (Ctrl+K or /)"
-              title="Search artworks and collections (Ctrl+K or /)"
-            >
-              <Search className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
-            </button>
-
-            {/* Saved artworks link with live count badge */}
-            <Link
-              href="/saved"
-              className={cn(
-                'relative p-2 transition-colors focus:outline-none focus-visible:ring-2 rounded-full',
-                isDarkHeader
-                  ? 'text-canvas hover:text-canvas/80 hover:bg-white/10 focus-visible:ring-canvas'
-                  : 'text-charcoal hover:text-charcoal-muted hover:bg-canvas-muted/50 focus-visible:ring-charcoal'
-              )}
-              aria-label={`View saved artworks (${savedCount} saved)`}
-              title="View your saved artworks"
-            >
-              <Bookmark className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
-              {isMounted && savedCount > 0 && (
-                <span
-                  className={cn(
-                    'absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full text-[0.625rem] font-sans font-medium',
-                    isDarkHeader
-                      ? 'bg-canvas text-charcoal'
-                      : 'bg-charcoal text-canvas'
-                  )}
-                >
-                  {savedCount}
-                </span>
-              )}
-            </Link>
-
-            {/* Cart trigger button with live itemCount badge and drawer opening */}
-            <button
-              type="button"
-              onClick={openCart}
-              className={cn(
-                'relative p-2 transition-colors focus:outline-none focus-visible:ring-2 rounded-full',
-                isDarkHeader
-                  ? 'text-canvas hover:text-canvas/80 hover:bg-white/10 focus-visible:ring-canvas'
-                  : 'text-charcoal hover:text-charcoal-muted hover:bg-canvas-muted/50 focus-visible:ring-charcoal'
-              )}
-              aria-label={itemCount > 0 ? `View acquisition cart (${itemCount} pieces)` : 'View acquisition cart'}
-              title="View acquisition selection"
-            >
-              <ShoppingBag className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
-              {isMounted && itemCount > 0 && (
-                <span
-                  className={cn(
-                    'absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full text-[0.625rem] font-sans font-medium',
-                    isDarkHeader
-                      ? 'bg-canvas text-charcoal'
-                      : 'bg-charcoal text-canvas'
-                  )}
-                >
-                  {itemCount}
-                </span>
-              )}
-            </button>
-
-            {/* Profile / Account — far right icon */}
+          <div className="flex items-center gap-3 sm:gap-4 md:gap-5">
+            {/* Profile / Account */}
             <Link
               href={isAuthenticated ? '/account' : '/login'}
               className={cn(
@@ -206,21 +131,21 @@ export function Header() {
               aria-label={isAuthenticated ? 'Go to your account' : 'Sign in to your account'}
               title={isAuthenticated ? 'My Account' : 'Sign In'}
             >
-              <UserCircle className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
+              <UserCircle className="h-5 w-5" />
             </Link>
 
             {/* Primary CTA (Desktop) */}
-            <div className="hidden sm:block pl-2">
+            <div className="hidden sm:block">
               <Button
                 href="/commission"
                 variant={isDarkHeader ? 'secondary' : 'primary'}
                 size="sm"
                 className={cn(
-                  'rounded-lg',
-                  isDarkHeader && 'bg-canvas text-charcoal hover:bg-canvas-subtle border-none font-medium'
+                  'rounded-lg tracking-wider text-xs uppercase px-4 sm:px-5 py-2 font-medium',
+                  isDarkHeader && 'bg-canvas text-charcoal hover:bg-canvas-subtle border-none'
                 )}
               >
-                Commission a Piece
+                CREATE A PIECE
               </Button>
             </div>
 

@@ -21,6 +21,7 @@ export interface ServicePreview {
     alt: string;
   };
   ctaLabel?: string;
+  ctaHref?: string;
   pricingStructure?: string;
   typicalTimeline?: string;
   process?: ServiceProcessStep[];

@@ -5,16 +5,17 @@ export const MOCK_SERVICES: Service[] = [
     id: 'srv-001',
     number: '01',
     slug: 'original-artwork',
-    title: 'Original Artwork',
+    title: 'Artworks',
     shortDescription:
-      'Curated one-of-a-kind canvases, mixed-media panels, and monumental studio creations available for acquisition and private collection.',
+      'Explore original, ready-made artworks available for purchase. Each piece is individually created and available to own.',
     description:
-      'Each original piece is conceived and hand-crafted by Darey using heavy impasto palette-knife techniques, raw mineral pigments, oil glazes, and tactile textures on heavy Belgian linen. Works are fully archived, registered in the studio ledger, and accompanied by a sealed Certificate of Authenticity.',
+      'Explore original, ready-made artworks available for acquisition. Each piece is individually created by Darey using heavy impasto palette-knife techniques, raw mineral pigments, oil glazes, and tactile textures on heavy Belgian linen. Works are fully archived, registered in the studio ledger, and accompanied by a sealed Certificate of Authenticity.',
     coverImage: {
       url: '/artworks/pic5.jpeg',
       alt: 'Original Artworks by Darey',
     },
-    ctaLabel: 'Explore Available Works',
+    ctaLabel: 'Browse Artworks',
+    ctaHref: '/artworks',
     pricingStructure: 'From $1,800 to $12,000+ USD depending on scale, medium, and framing',
     typicalTimeline: 'Immediate dispatch (3–7 business days conditioning & crating)',
     features: [
@@ -61,7 +62,7 @@ export const MOCK_SERVICES: Service[] = [
     id: 'srv-002',
     number: '02',
     slug: 'custom-commissions',
-    title: 'Custom Commissions',
+    title: 'Custom Artworks',
     shortDescription:
       'Bespoke, deeply personalized artworks developed in intimate dialogue with private collectors, institutions, and architects.',
     description:
@@ -70,7 +71,8 @@ export const MOCK_SERVICES: Service[] = [
       url: '/artworks/hero.jpeg',
       alt: 'Darey with monumental custom artwork in studio',
     },
-    ctaLabel: 'Begin a Commission',
+    ctaLabel: 'Create a Piece',
+    ctaHref: '/commission',
     pricingStructure: 'Quoted individually based on dimensions, substrates, and complexity (typically $2,500 – $15,000+ USD)',
     typicalTimeline: '6 to 12 weeks from deposit to completion',
     features: [
@@ -123,8 +125,8 @@ export const MOCK_SERVICES: Service[] = [
     description:
       'Site-specific monumental artworks executed directly on interior or exterior architectural surfaces. Darey works with architects, interior curators, and corporate patrons to activate soaring walls with arresting geometric stillness, organic movement, and tactile warmth.',
     coverImage: {
-      url: '/artworks/pic6.jpeg',
-      alt: 'Monumental architectural artwork by Darey',
+      url: '/artworks/architectural-murals.jpg',
+      alt: 'Large-scale architectural geometric wall mural by Darey',
     },
     ctaLabel: 'Request Mural Consultation',
     pricingStructure: 'Per square meter / surface scope + travel and staging expenses (Custom proposal provided)',
@@ -179,8 +181,8 @@ export const MOCK_SERVICES: Service[] = [
     description:
       'Transcending traditional decorative wall coverings, Darey applies fine-art textural mastery to entire interior feature walls. Utilizing natural mineral plasters, pumice grounds, custom pigments, and hand-gilded metallic leaf, each wall becomes an immersive sensory sculpture.',
     coverImage: {
-      url: '/artworks/pic7.jpeg',
-      alt: 'Luxury architectural interior textured finish by Darey',
+      url: '/artworks/interior-finishes.jpg',
+      alt: 'Artisanal textured interior wall finish with tactile relief',
     },
     ctaLabel: 'Explore Finishes',
     pricingStructure: 'Project-based quotation depending on square meters and artisanal techniques',
@@ -235,8 +237,8 @@ export const MOCK_SERVICES: Service[] = [
     description:
       'Bringing an artist’s meticulous eye for nuance, tone, and light to full-scale residential and commercial painting projects. We provide flawless surface preparation, expert color consulting, and elite paint application that elevates living spaces into cohesive works of living art.',
     coverImage: {
-      url: '/artworks/pic9.jpeg',
-      alt: 'Professional house painting and finishing by Darey',
+      url: '/artworks/house-painting.jpg',
+      alt: 'Professional house painting and wall finishing in vibrant modern tones',
     },
     ctaLabel: 'Get a Quote',
     pricingStructure: 'Competitive square-meter or full-project pricing following on-site or blueprint estimation',

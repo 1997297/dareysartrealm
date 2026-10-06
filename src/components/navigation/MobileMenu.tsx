@@ -114,10 +114,10 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 href="/commission"
                 variant="primary"
                 size="lg"
-                className="w-full"
+                className="w-full tracking-wider text-xs uppercase"
                 onClick={onClose}
               >
-                Commission a Piece
+                CREATE A PIECE
               </Button>
             </div>
           </nav>

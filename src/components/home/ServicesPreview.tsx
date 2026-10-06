@@ -76,7 +76,7 @@ export function ServicesPreview({ services }: ServicesPreviewProps) {
               {/* Bottom Action Link */}
               <div className="pt-4 border-t border-canvas-border">
                 <Link
-                  href={`/services/${service.slug}`}
+                  href={service.ctaHref || `/services/${service.slug}`}
                   className="inline-flex items-center text-xs font-sans font-medium uppercase tracking-gallery text-charcoal hover:underline"
                 >
                   {service.ctaLabel || 'Learn More'} &rarr;
