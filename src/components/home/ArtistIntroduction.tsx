@@ -33,15 +33,19 @@ export function ArtistIntroduction() {
                 />
               </div>
 
-              {/* Offset: small portrait of Darey */}
-              <div className="absolute -bottom-8 -right-6 w-1/2 aspect-square overflow-hidden bg-canvas border border-canvas-border hidden sm:block shadow-gallery rounded-xl">
-                <Image
-                  src="/artist-portrait.jpg"
-                  alt="Portrait of Darey"
-                  fill
-                  sizes="25vw"
-                  className="object-cover object-center"
-                />
+              {/* Offset: portrait of Darey with frosted glass effect and natural shoulder width */}
+              <div className="absolute -bottom-6 -right-4 sm:-bottom-7 sm:-right-5 w-[46%] sm:w-[48%] aspect-[4/5] overflow-hidden bg-white/60 backdrop-blur-lg border border-white/60 shadow-gallery rounded-xl hidden sm:flex items-end justify-center">
+                {/* Subtle light ambient wash letting the canvas behind show through */}
+                <div className="absolute inset-0 bg-gradient-to-t from-white/70 via-white/35 to-white/20 pointer-events-none" />
+                <div className="relative w-full h-full">
+                  <Image
+                    src="/artist-portrait-transparent.png"
+                    alt="Portrait of Darey"
+                    fill
+                    sizes="22vw"
+                    className="object-cover object-top transition-transform duration-700 hover:scale-105"
+                  />
+                </div>
               </div>
             </motion.div>
           </div>

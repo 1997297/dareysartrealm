@@ -25,8 +25,8 @@ export function Footer() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-start">
             <div className="lg:col-span-7">
               <div className="flex items-center gap-3 mb-4">
-                <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-[#121212] border border-charcoal/40 select-none shadow-sm p-1">
-                  <Logo variant="light" size={36} />
+                <div className="flex items-center justify-center w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-md bg-[#121212] border border-charcoal/30 select-none shadow-xs p-0.5">
+                  <Logo variant="light" size={24} />
                 </div>
                 <p className="gallery-plaque text-xs text-charcoal-subtle">
                   The exhibition continues
