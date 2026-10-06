@@ -1,0 +1,35 @@
+﻿:root {
+  --canvas-bg: #FAF8F5;
+  --canvas-subtle: #F4F1EA;
+  --canvas-paper: #FBF9F6;
+  --canvas-border: #E5E0D6;
+
+  --charcoal-primary: #141413;
+  --charcoal-light: #2B2A27;
+  --charcoal-muted: #57544F;
+  --charcoal-subtle: #8C877F;
+  --charcoal-line: #D8D3C8;
+
+  --accent-cobalt: #1E40AF;
+  --accent-vermilion: #E03E26;
+  --accent-sunflower: #EAB308;
+  --accent-lime: #65A30D;
+  --accent-purple: #7C3AED;
+  --accent-coral: #F43F5E;
+
+  --font-display: 'Cormorant Garamond', 'Playfair Display', 'Cinzel', 'Didot', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  --ease-artistic: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-normal: 400ms;
+  --duration-slow: 800ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
