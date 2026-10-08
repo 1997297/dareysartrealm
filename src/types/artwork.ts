@@ -1,4 +1,4 @@
-export type ArtworkStatus = 'available' | 'reserved' | 'sold' | 'commissioned' | 'draft';
+export type ArtworkStatus = 'available' | 'reserved' | 'collected' | 'commissioned' | 'draft' | 'sold';
 
 export type ArtworkOrientation = 'portrait' | 'landscape' | 'square' | 'panoramic';
 
@@ -41,6 +41,8 @@ export interface Artwork {
   images: ArtworkImage[];
   accentColor?: string; // Optional dominant/accent color for dynamic tinting
   featured?: boolean;
+  isPieceOfTheMonth?: boolean; // Studio-curated Hot Piece / Piece of the Month
+  curatorialBadge?: string; // Optional CMS badge: e.g. "Piece of the Month", "Curator's Pick"
   provenance?: string; // For sold/collected works: e.g. "Private Collection"
   availabilityNote?: string;
   publicationStatus?: 'published' | 'draft' | 'archived';
@@ -61,5 +63,5 @@ export interface ArtworkFilters {
   minPrice?: number;
   maxPrice?: number;
   search?: string;
-  sortBy?: 'newest' | 'price-asc' | 'price-desc' | 'title-asc' | 'size-desc';
+  sortBy?: 'curated' | 'featured' | 'newest' | 'price-asc' | 'price-desc' | 'title-asc' | 'size-desc';
 }

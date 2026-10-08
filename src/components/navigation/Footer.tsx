@@ -8,6 +8,7 @@ import { SITE_NAME, NAV_ITEMS, SOCIAL_LINKS, CONTACT_INFO } from '@/lib/constant
 import { Container } from '@/components/layout/Container';
 import { Button } from '@/components/ui/Button';
 import { Logo } from '@/components/ui/Logo';
+import { BrandWordmark } from '@/components/ui/BrandWordmark';
 
 export function Footer() {
   const pathname = usePathname();
@@ -24,17 +25,12 @@ export function Footer() {
         <div className="border-b border-canvas-border pb-16 md:pb-20">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-start">
             <div className="lg:col-span-7">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="flex items-center justify-center w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-md bg-[#121212] border border-charcoal/30 select-none shadow-xs p-0.5">
-                  <Logo variant="light" size={24} />
+              <div className="flex items-center gap-3.5 sm:gap-4 mb-2">
+                <div className="flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-lg bg-[#121212] border border-charcoal/30 select-none shadow-xs p-1 shrink-0">
+                  <Logo variant="light" size={32} className="sm:scale-110" />
                 </div>
-                <p className="gallery-plaque text-xs text-charcoal-subtle">
-                  The exhibition continues
-                </p>
+                <BrandWordmark variant="dark" size="lg" interactive={false} />
               </div>
-              <h2 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-charcoal font-normal leading-[1.04]">
-                Darey&apos;s Artrealm.
-              </h2>
               <p className="mt-6 text-charcoal-muted text-base sm:text-lg max-w-xl font-light leading-relaxed">
                 A sanctuary where original paintings, architectural interventions, and bespoke commissions are crafted to provoke feeling before understanding.
               </p>
@@ -52,7 +48,7 @@ export function Footer() {
                   Collaborate directly with Darey to create a monumental canvas or site-specific artwork tailored to your collection.
                 </p>
                 <Button href="/commission" variant="primary" size="sm">
-                  Commission an Artwork
+                  Create a Piece
                 </Button>
               </div>
             </div>

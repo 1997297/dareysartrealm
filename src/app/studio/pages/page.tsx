@@ -213,6 +213,74 @@ export default function StudioPagesCMSPage() {
             </div>
           </div>
 
+          {/* Stacked Artwork Cards Selection */}
+          <div className="p-4 rounded-xl border border-canvas-border bg-canvas space-y-3">
+            <div>
+              <p className="text-xs font-mono uppercase text-charcoal font-semibold">
+                Manifesto Stacked Artwork Cards (3 Prints)
+              </p>
+              <p className="text-xs text-charcoal-muted mt-0.5">
+                Configure the three overlapping artwork images displayed diagonally in the &ldquo;Art made to be felt&rdquo; section.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+              <div>
+                <label className="block text-[0.6875rem] font-mono uppercase text-charcoal-subtle mb-1">
+                  Card 1 (Front / Prominent)
+                </label>
+                <input
+                  type="text"
+                  value={homepage.manifestoStackedImages?.[0] || '/artworks/pic5.jpeg'}
+                  onChange={(e) => {
+                    const current = homepage.manifestoStackedImages || ['/artworks/pic5.jpeg', '/artworks/pic2.jpeg', '/artworks/pic7.jpeg'];
+                    const next = [...current];
+                    next[0] = e.target.value;
+                    setHomepage({ ...homepage, manifestoStackedImages: next });
+                  }}
+                  placeholder="/artworks/pic5.jpeg"
+                  className="w-full px-2.5 py-1.5 text-xs font-mono rounded-lg border border-canvas-border bg-canvas-subtle text-charcoal"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[0.6875rem] font-mono uppercase text-charcoal-subtle mb-1">
+                  Card 2 (Middle)
+                </label>
+                <input
+                  type="text"
+                  value={homepage.manifestoStackedImages?.[1] || '/artworks/pic1.jpeg'}
+                  onChange={(e) => {
+                    const current = homepage.manifestoStackedImages || ['/artworks/pic5.jpeg', '/artworks/pic1.jpeg', '/artworks/pic7.jpeg'];
+                    const next = [...current];
+                    next[1] = e.target.value;
+                    setHomepage({ ...homepage, manifestoStackedImages: next });
+                  }}
+                  placeholder="/artworks/pic1.jpeg"
+                  className="w-full px-2.5 py-1.5 text-xs font-mono rounded-lg border border-canvas-border bg-canvas-subtle text-charcoal"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[0.6875rem] font-mono uppercase text-charcoal-subtle mb-1">
+                  Card 3 (Back)
+                </label>
+                <input
+                  type="text"
+                  value={homepage.manifestoStackedImages?.[2] || '/artworks/pic7.jpeg'}
+                  onChange={(e) => {
+                    const current = homepage.manifestoStackedImages || ['/artworks/pic5.jpeg', '/artworks/pic1.jpeg', '/artworks/pic7.jpeg'];
+                    const next = [...current];
+                    next[2] = e.target.value;
+                    setHomepage({ ...homepage, manifestoStackedImages: next });
+                  }}
+                  placeholder="/artworks/pic7.jpeg"
+                  className="w-full px-2.5 py-1.5 text-xs font-mono rounded-lg border border-canvas-border bg-canvas-subtle text-charcoal"
+                />
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-mono uppercase text-charcoal-subtle mb-1.5">

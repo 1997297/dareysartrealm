@@ -23,8 +23,8 @@ export default function StudioCollectionsPage() {
     try {
       setLoading(true);
       const [cols, arts] = await Promise.all([
-        collectionService.getAll(),
-        artworkService.getAll(),
+        collectionService.getAll({ includeUnpublished: true }),
+        artworkService.getAll({ includeUnpublished: true }),
       ]);
       setCollections(cols);
       setArtworks(arts);
@@ -101,6 +101,19 @@ export default function StudioCollectionsPage() {
                     {col.featured && (
                       <span className="px-2 py-0.5 rounded-full text-[0.625rem] font-mono uppercase bg-amber-200 text-amber-900 font-bold backdrop-blur-sm">
                         Featured Series
+                      </span>
+                    )}
+                    {col.visibility === 'draft' ? (
+                      <span className="px-2 py-0.5 rounded-full text-[0.625rem] font-mono uppercase bg-stone-200 text-stone-700 font-medium backdrop-blur-sm">
+                        Draft
+                      </span>
+                    ) : col.visibility === 'archived' ? (
+                      <span className="px-2 py-0.5 rounded-full text-[0.625rem] font-mono uppercase bg-rose-100 text-rose-700 font-medium backdrop-blur-sm">
+                        Archived
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full text-[0.625rem] font-mono uppercase bg-emerald-100 text-emerald-800 font-medium backdrop-blur-sm">
+                        Published
                       </span>
                     )}
                   </div>

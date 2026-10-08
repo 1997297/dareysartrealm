@@ -990,6 +990,11 @@ export const INITIAL_CMS_HOMEPAGE: CMSHomepageContent = {
   manifestoAuthor: 'Darey — Principal Studio Manifesto',
   manifestoBody:
     'Born of tactile experimentation and natural earth minerals, the practice honors the unpredictable nature of pigments while maintaining strict architectural balance.',
+  manifestoStackedImages: [
+    '/artworks/pic5.jpeg',
+    '/artworks/pic1.jpeg',
+    '/artworks/pic7.jpeg',
+  ],
   artistIntroTitle: 'The hand behind the texture.',
   artistIntroBody:
     'Darey approaches the surface not as a flat plane, but as an excavation site. Pulverized minerals, unbleached linen, and pure pigment washes coalesce into forms that reflect both classical rigor and primal intuition.',

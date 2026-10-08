@@ -11,7 +11,7 @@ export type UserStatus = 'active' | 'suspended';
 export type PreferredContactMethod = 'email' | 'whatsapp' | 'phone';
 
 export type PublicationStatus = 'draft' | 'published' | 'archived';
-export type AvailabilityStatus = 'available' | 'reserved' | 'sold' | 'commissioned' | 'draft';
+export type AvailabilityStatus = 'available' | 'reserved' | 'collected' | 'commissioned' | 'draft' | 'sold';
 export type ArtworkOrientation = 'portrait' | 'landscape' | 'square' | 'panoramic';
 export type ImageRole = 'primary' | 'detail' | 'texture' | 'angle' | 'framed' | 'interior' | 'process' | 'other';
 export type StorageBucket = 'artworks-public' | 'artworks-private';
@@ -183,6 +183,7 @@ export interface Database {
           availability_status: AvailabilityStatus;
           publication_status: PublicationStatus;
           featured: boolean;
+          is_piece_of_the_month: boolean;
           accent_color: string | null;
           tags: string[];
           sort_order: number;
@@ -217,6 +218,7 @@ export interface Database {
           availability_status?: AvailabilityStatus;
           publication_status?: PublicationStatus;
           featured?: boolean;
+          is_piece_of_the_month?: boolean;
           accent_color?: string | null;
           tags?: string[];
           sort_order?: number;
@@ -251,6 +253,7 @@ export interface Database {
           availability_status?: AvailabilityStatus;
           publication_status?: PublicationStatus;
           featured?: boolean;
+          is_piece_of_the_month?: boolean;
           accent_color?: string | null;
           tags?: string[];
           sort_order?: number;
@@ -439,6 +442,96 @@ export interface Database {
           }
         ];
       };
+      site_settings: {
+        Row: {
+          key: string;
+          value: Json;
+          description: string | null;
+          updated_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          key: string;
+          value?: Json;
+          description?: string | null;
+          updated_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          key?: string;
+          value?: Json;
+          description?: string | null;
+          updated_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'site_settings_updated_by_fkey';
+            columns: ['updated_by'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
+
+      services: {
+        Row: {
+          id: string;
+          slug: string;
+          title: string;
+          short_description: string;
+          description: string;
+          cover_image_url: string | null;
+          cover_image_alt: string | null;
+          pricing_structure: string | null;
+          typical_timeline: string | null;
+          features: string[];
+          process: Json;
+          sort_order: number;
+          publication_status: PublicationStatus;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          slug: string;
+          title: string;
+          short_description?: string;
+          description?: string;
+          cover_image_url?: string | null;
+          cover_image_alt?: string | null;
+          pricing_structure?: string | null;
+          typical_timeline?: string | null;
+          features?: string[];
+          process?: Json;
+          sort_order?: number;
+          publication_status?: PublicationStatus;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          slug?: string;
+          title?: string;
+          short_description?: string;
+          description?: string;
+          cover_image_url?: string | null;
+          cover_image_alt?: string | null;
+          pricing_structure?: string | null;
+          typical_timeline?: string | null;
+          features?: string[];
+          process?: Json;
+          sort_order?: number;
+          publication_status?: PublicationStatus;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
 
     Views: {
@@ -485,3 +578,12 @@ export type ArtworkImageUpdate = Database['public']['Tables']['artwork_images'][
 export type MediaAssetRow = Database['public']['Tables']['media_assets']['Row'];
 export type MediaAssetInsert = Database['public']['Tables']['media_assets']['Insert'];
 export type MediaAssetUpdate = Database['public']['Tables']['media_assets']['Update'];
+
+export type SiteSettingRow = Database['public']['Tables']['site_settings']['Row'];
+export type SiteSettingInsert = Database['public']['Tables']['site_settings']['Insert'];
+export type SiteSettingUpdate = Database['public']['Tables']['site_settings']['Update'];
+
+export type ServiceRow = Database['public']['Tables']['services']['Row'];
+export type ServiceInsert = Database['public']['Tables']['services']['Insert'];
+export type ServiceUpdate = Database['public']['Tables']['services']['Update'];
+

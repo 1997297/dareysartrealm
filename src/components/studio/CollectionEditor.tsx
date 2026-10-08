@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Save, Plus, Check, Trash2, ExternalLink, Upload, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Check, Trash2, ExternalLink, Upload, Loader2, ChevronUp, ChevronDown } from 'lucide-react';
 import { collectionService } from '@/services/collectionService';
 import { artworkService } from '@/services/artworkService';
 import { mediaService } from '@/services/mediaService';
@@ -25,6 +25,10 @@ export function CollectionEditor({ initialCollection, isNew = false }: Collectio
   const [description, setDescription] = useState(initialCollection?.description || '');
   const [year, setYear] = useState<number>(initialCollection?.year || new Date().getFullYear());
   const [featured, setFeatured] = useState<boolean>(initialCollection?.featured || false);
+  const [visibility, setVisibility] = useState<'published' | 'draft' | 'archived'>(
+    initialCollection?.visibility || (isNew ? 'draft' : 'published')
+  );
+  const [displayOrder, setDisplayOrder] = useState<number>(initialCollection?.displayOrder || 1);
   const [coverImageUrl, setCoverImageUrl] = useState<string>(
     initialCollection?.coverImage?.url || '/artworks/pic1.jpeg'
   );
@@ -60,7 +64,7 @@ export function CollectionEditor({ initialCollection, isNew = false }: Collectio
 
   useEffect(() => {
     async function loadArtworks() {
-      const list = await artworkService.getAll();
+      const list = await artworkService.getAll({ includeUnpublished: true });
       setAllArtworks(list);
     }
     loadArtworks();
@@ -79,9 +83,13 @@ export function CollectionEditor({ initialCollection, isNew = false }: Collectio
     }
   }, [title, isNew, initialCollection]);
 
-  // Determine which artworks belong to this collection
-  const assignedArtworks = allArtworks.filter(
-    (a) => a.collection?.slug === (initialCollection?.slug || slug)
+  // Determine which artworks belong to this collection, sorted by displayOrder
+  const assignedArtworks = allArtworks
+    .filter((a) => a.collection?.slug === (initialCollection?.slug || slug))
+    .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+
+  const unassignedArtworks = allArtworks.filter(
+    (a) => a.collection?.slug !== (initialCollection?.slug || slug)
   );
 
   async function toggleArtworkAssignment(artwork: Artwork) {
@@ -93,8 +101,10 @@ export function CollectionEditor({ initialCollection, isNew = false }: Collectio
       // Unassign
       await artworkService.update(artwork.id, { collection: undefined });
     } else {
-      // Assign
+      // Assign with order at the end of current list
+      const nextOrder = assignedArtworks.length + 1;
       await artworkService.update(artwork.id, {
+        displayOrder: nextOrder,
         collection: {
           id: initialCollection?.id || `col-${Date.now()}`,
           slug: targetSlug,
@@ -104,8 +114,31 @@ export function CollectionEditor({ initialCollection, isNew = false }: Collectio
     }
 
     // Refresh local artworks
-    const refreshed = await artworkService.getAll();
+    const refreshed = await artworkService.getAll({ includeUnpublished: true });
     setAllArtworks(refreshed);
+  }
+
+  async function moveArtworkOrder(artworkId: string, direction: 'up' | 'down') {
+    const currentIndex = assignedArtworks.findIndex((a) => a.id === artworkId);
+    if (currentIndex === -1) return;
+    const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    if (targetIndex < 0 || targetIndex >= assignedArtworks.length) return;
+
+    const currentArt = assignedArtworks[currentIndex];
+    const targetArt = assignedArtworks[targetIndex];
+
+    const currentOrder = currentArt.displayOrder ?? (currentIndex + 1);
+    const targetOrder = targetArt.displayOrder ?? (targetIndex + 1);
+
+    await Promise.all([
+      artworkService.update(currentArt.id, { displayOrder: targetOrder }),
+      artworkService.update(targetArt.id, { displayOrder: currentOrder }),
+    ]);
+
+    const refreshed = await artworkService.getAll({ includeUnpublished: true });
+    setAllArtworks(refreshed);
+    setFeedback('Exhibition sequence updated.');
+    setTimeout(() => setFeedback(null), 2500);
   }
 
   async function handleSave() {
@@ -125,6 +158,8 @@ export function CollectionEditor({ initialCollection, isNew = false }: Collectio
       description: description.trim(),
       year,
       featured,
+      visibility,
+      displayOrder,
       artworkCount: assignedArtworks.length,
       coverImage: {
         url: coverImageUrl,
@@ -324,6 +359,35 @@ export function CollectionEditor({ initialCollection, isNew = false }: Collectio
             </div>
           </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-mono uppercase text-charcoal-subtle mb-1.5">
+                Publication Status
+              </label>
+              <select
+                value={visibility}
+                onChange={(e) => setVisibility(e.target.value as any)}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-canvas-border bg-canvas text-charcoal text-sm font-sans focus:outline-none focus:border-charcoal/40"
+              >
+                <option value="published">Published (Live on Website)</option>
+                <option value="draft">Draft (Studio Only)</option>
+                <option value="archived">Archived (Historical Archive)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-mono uppercase text-charcoal-subtle mb-1.5">
+                Display Order Priority
+              </label>
+              <input
+                type="number"
+                value={displayOrder}
+                onChange={(e) => setDisplayOrder(Number(e.target.value))}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-canvas-border bg-canvas text-charcoal text-sm font-mono focus:outline-none focus:border-charcoal/40"
+              />
+            </div>
+          </div>
+
           <div className="p-4 rounded-xl border border-canvas-border bg-canvas flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-charcoal">Featured on Homepage</p>
@@ -340,33 +404,42 @@ export function CollectionEditor({ initialCollection, isNew = false }: Collectio
           </div>
         </div>
 
-        {/* Right Panel: Artwork Membership Management (5 cols) */}
-        <div className="lg:col-span-5 space-y-4">
+        {/* Right Panel: Artwork Membership & Ordering Management (5 cols) */}
+        <div className="lg:col-span-5 space-y-6">
+          {/* Section 1: Curated Sequence */}
           <div className="bg-canvas-subtle p-6 rounded-2xl border border-canvas-border/80 shadow-subtle space-y-4">
             <div>
-              <h2 className="font-display text-base font-semibold text-charcoal">
-                Artwork Membership ({assignedArtworks.length})
-              </h2>
+              <div className="flex items-center justify-between">
+                <h2 className="font-display text-base font-semibold text-charcoal">
+                  Curated Sequence ({assignedArtworks.length})
+                </h2>
+                <span className="text-[0.6875rem] font-mono text-charcoal-muted uppercase">
+                  Sort Order
+                </span>
+              </div>
               <p className="text-xs text-charcoal-muted mt-0.5">
-                Select which catalogued paintings belong to this collection.
+                Reorder how paintings appear in this collection using the arrows.
               </p>
             </div>
 
-            <div className="max-h-[500px] overflow-y-auto space-y-2 pr-1 scrollbar-thin">
-              {allArtworks.map((art) => {
-                const isAssigned = art.collection?.slug === slug;
-                return (
+            {assignedArtworks.length === 0 ? (
+              <div className="p-6 text-center border border-dashed border-canvas-border rounded-xl bg-canvas">
+                <p className="text-xs text-charcoal-muted">
+                  No artworks in this collection yet. Select paintings from below to add them.
+                </p>
+              </div>
+            ) : (
+              <div className="max-h-[320px] overflow-y-auto space-y-2 pr-1 scrollbar-thin">
+                {assignedArtworks.map((art, idx) => (
                   <div
                     key={art.id}
-                    onClick={() => toggleArtworkAssignment(art)}
-                    className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
-                      isAssigned
-                        ? 'bg-canvas border-charcoal shadow-subtle'
-                        : 'bg-canvas/50 border-canvas-border/70 hover:bg-canvas'
-                    }`}
+                    className="p-2.5 rounded-xl border border-canvas-border bg-canvas flex items-center justify-between gap-3 shadow-2xs"
                   >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-10 h-10 rounded-lg overflow-hidden bg-stone-100 shrink-0">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="text-[0.6875rem] font-mono font-bold text-charcoal-subtle w-5 shrink-0 text-center">
+                        #{idx + 1}
+                      </span>
+                      <div className="w-9 h-9 rounded-lg overflow-hidden bg-stone-100 shrink-0">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={art.coverImage.url}
@@ -378,24 +451,88 @@ export function CollectionEditor({ initialCollection, isNew = false }: Collectio
                         <p className="text-xs font-semibold text-charcoal truncate">
                           {art.title}
                         </p>
-                        <p className="text-[0.6875rem] text-charcoal-muted font-mono truncate">
-                          {art.artworkId} &bull; {art.width}&times;{art.height} cm
+                        <p className="text-[0.625rem] text-charcoal-muted font-mono truncate">
+                          {art.artworkId}
                         </p>
                       </div>
                     </div>
 
-                    <div
-                      className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 border transition-colors ${
-                        isAssigned
-                          ? 'bg-charcoal text-canvas border-charcoal'
-                          : 'border-canvas-border text-transparent'
-                      }`}
-                    >
-                      <Check className="w-3 h-3 stroke-[3]" />
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        disabled={idx === 0}
+                        onClick={() => moveArtworkOrder(art.id, 'up')}
+                        className="p-1 text-charcoal-subtle hover:text-charcoal disabled:opacity-30 rounded hover:bg-canvas-subtle"
+                        title="Move earlier in collection"
+                      >
+                        <ChevronUp className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        disabled={idx === assignedArtworks.length - 1}
+                        onClick={() => moveArtworkOrder(art.id, 'down')}
+                        className="p-1 text-charcoal-subtle hover:text-charcoal disabled:opacity-30 rounded hover:bg-canvas-subtle"
+                        title="Move later in collection"
+                      >
+                        <ChevronDown className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => toggleArtworkAssignment(art)}
+                        className="p-1 text-charcoal-subtle hover:text-rose-600 rounded hover:bg-canvas-subtle ml-1"
+                        title="Remove from collection"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
-                );
-              })}
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Section 2: Available Artworks to Add */}
+          <div className="bg-canvas-subtle p-6 rounded-2xl border border-canvas-border/80 shadow-subtle space-y-4">
+            <div>
+              <h2 className="font-display text-base font-semibold text-charcoal">
+                Available Artworks ({unassignedArtworks.length})
+              </h2>
+              <p className="text-xs text-charcoal-muted mt-0.5">
+                Click any painting to assign it to this collection.
+              </p>
+            </div>
+
+            <div className="max-h-[280px] overflow-y-auto space-y-2 pr-1 scrollbar-thin">
+              {unassignedArtworks.map((art) => (
+                <div
+                  key={art.id}
+                  onClick={() => toggleArtworkAssignment(art)}
+                  className="p-2.5 rounded-xl border border-canvas-border/70 bg-canvas/60 hover:bg-canvas transition-colors cursor-pointer flex items-center justify-between gap-3"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded-lg overflow-hidden bg-stone-100 shrink-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={art.coverImage.url}
+                        alt={art.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium text-charcoal truncate">
+                        {art.title}
+                      </p>
+                      <p className="text-[0.625rem] text-charcoal-muted font-mono truncate">
+                        {art.artworkId}
+                      </p>
+                    </div>
+                  </div>
+
+                  <span className="text-[0.6875rem] font-medium text-charcoal px-2 py-0.5 rounded border border-canvas-border hover:bg-canvas-muted">
+                    + Add
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         </div>

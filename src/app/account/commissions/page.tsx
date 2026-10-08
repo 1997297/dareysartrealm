@@ -30,7 +30,7 @@ export default function AccountCommissionsPage() {
             Bespoke Projects ({commissions.length})
           </span>
           <Button href="/commission" variant="outline" size="sm">
-            Begin New Commission
+            Create a Piece
           </Button>
         </div>
 
@@ -51,7 +51,7 @@ export default function AccountCommissionsPage() {
             </p>
             <div className="pt-2">
               <Button href="/commission" variant="primary" size="md">
-                Start a Commission Brief
+                Create a Piece
               </Button>
             </div>
           </div>

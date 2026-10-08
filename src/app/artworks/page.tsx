@@ -5,9 +5,11 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { SlidersHorizontal, LayoutGrid, Grid2X2, X } from 'lucide-react';
 import { Container } from '@/components/layout/Container';
 import { Section } from '@/components/layout/Section';
+import { Button } from '@/components/ui/Button';
 import { ArtworkCard } from '@/components/artwork/ArtworkCard';
 import { FilterDrawer } from '@/components/artwork/FilterDrawer';
 import { artworkService } from '@/services/artworkService';
+import { INITIAL_APPROVED_ARTWORKS } from '@/data/initialContent';
 import { Artwork, ArtworkFilters, ArtworkStatus } from '@/types/artwork';
 import { cn } from '@/lib/utils';
 
@@ -15,8 +17,8 @@ function ArtworksContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const [allArtworks, setAllArtworks] = useState<Artwork[]>([]);
-  const [filteredArtworks, setFilteredArtworks] = useState<Artwork[]>([]);
+  const [allArtworks, setAllArtworks] = useState<Artwork[]>(INITIAL_APPROVED_ARTWORKS);
+  const [filteredArtworks, setFilteredArtworks] = useState<Artwork[]>(INITIAL_APPROVED_ARTWORKS);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'editorial' | 'grid'>('editorial');
 
@@ -44,7 +46,7 @@ function ArtworksContent() {
     medium: searchParams.get('medium') || 'all',
     orientation: 'all',
     size: 'all',
-    sortBy: 'newest',
+    sortBy: 'curated',
   });
 
   // Load artworks on mount
@@ -86,7 +88,7 @@ function ArtworksContent() {
       medium: 'all',
       orientation: 'all',
       size: 'all',
-      sortBy: 'newest',
+      sortBy: 'curated',
     });
     router.replace('/artworks');
   };
@@ -196,21 +198,23 @@ function ArtworksContent() {
               <div className="flex items-center gap-2 text-xs text-charcoal-muted font-sans">
                 <span className="hidden sm:inline-block uppercase tracking-gallery">Sort:</span>
                 <select
-                  value={filters.sortBy || 'newest'}
+                  value={filters.sortBy || 'curated'}
                   onChange={(e) =>
                     setFilters({ ...filters, sortBy: e.target.value as ArtworkFilters['sortBy'] })
                   }
                   className="bg-canvas border border-canvas-border px-2.5 py-1.5 text-xs text-charcoal rounded-sm focus:border-charcoal focus:outline-none uppercase tracking-gallery"
                 >
+                  <option value="curated">Curated</option>
+                  <option value="featured">Featured</option>
                   <option value="newest">Newest</option>
                   <option value="price-asc">Price: Low to High</option>
                   <option value="price-desc">Price: High to Low</option>
-                  <option value="title-asc">Title: A â€“ Z</option>
+                  <option value="title-asc">Title: A – Z</option>
                   <option value="size-desc">Scale: Largest</option>
                 </select>
               </div>
 
-              {/* View Mode Toggle: Editorial vs Grid */}
+              {/* View Mode Toggle: Curated Wall vs Balanced Grid */}
               <div className="hidden sm:flex items-center border border-canvas-border rounded-sm p-0.5 bg-canvas">
                 <button
                   type="button"
@@ -219,8 +223,8 @@ function ArtworksContent() {
                     'p-1.5 rounded-sm transition-colors',
                     viewMode === 'editorial' ? 'bg-charcoal text-canvas' : 'text-charcoal-muted hover:text-charcoal'
                   )}
-                  title="Editorial View (Asymmetrical Art Pacing)"
-                  aria-label="Editorial View"
+                  title="Curated Wall (Art-Directed Gallery Rhythm)"
+                  aria-label="Curated Wall"
                 >
                   <LayoutGrid className="h-4 w-4" />
                 </button>
@@ -231,8 +235,8 @@ function ArtworksContent() {
                     'p-1.5 rounded-sm transition-colors',
                     viewMode === 'grid' ? 'bg-charcoal text-canvas' : 'text-charcoal-muted hover:text-charcoal'
                   )}
-                  title="Grid View (Structured Gallery Layout)"
-                  aria-label="Grid View"
+                  title="Balanced Grid (Uniform Discovery Grid)"
+                  aria-label="Balanced Grid"
                 >
                   <Grid2X2 className="h-4 w-4" />
                 </button>
@@ -319,8 +323,29 @@ function ArtworksContent() {
       {/* Main Artwork Gallery Exhibition */}
       <Section background="canvas" spacing="lg">
         <Container size="wide">
-          {filteredArtworks.length === 0 ? (
-            /* Empty State */
+          {allArtworks.length === 0 ? (
+            /* Curatorial Empty State when database has 0 published artworks */
+            <div className="py-24 text-center max-w-lg mx-auto border border-dashed border-canvas-border p-12 rounded-2xl">
+              <span className="gallery-plaque text-xs text-charcoal-subtle uppercase tracking-gallery block mb-3">
+                Studio Practice &bull; In Preparation
+              </span>
+              <h3 className="font-display text-3xl sm:text-4xl text-charcoal mb-4">
+                The walls are being curated.
+              </h3>
+              <p className="font-sans text-sm text-charcoal-muted leading-relaxed font-light mb-8">
+                New original artworks are currently being prepared in Darey&apos;s studio. In the meantime, you may explore bespoke private commissions or contact the studio directly.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Button href="/commission" variant="primary" size="md">
+                  Create a Piece
+                </Button>
+                <Button href="/contact" variant="outline" size="md">
+                  Contact Studio
+                </Button>
+              </div>
+            </div>
+          ) : filteredArtworks.length === 0 ? (
+            /* Empty Filter Results State */
             <div className="py-20 text-center max-w-lg mx-auto">
               <span className="gallery-plaque text-xs text-charcoal-subtle uppercase tracking-gallery block mb-3">
                 Catalogue Search
@@ -334,78 +359,67 @@ function ArtworksContent() {
               <button
                 type="button"
                 onClick={handleResetFilters}
-                className="px-6 py-3 bg-charcoal text-canvas text-xs uppercase tracking-gallery font-medium hover:bg-charcoal-muted transition-colors rounded-sm"
+                className="px-6 py-3 bg-charcoal text-canvas text-xs uppercase tracking-gallery font-medium hover:bg-charcoal-muted transition-colors rounded-full"
               >
                 Clear All Filters
               </button>
             </div>
           ) : viewMode === 'editorial' ? (
-            /* Editorial Layout: Asymmetric, pacing, varied scales respecting natural aspect ratios */
-            <div className="space-y-16 sm:space-y-24">
-              {/* Featured Monumental Lead Artwork if present */}
-              {filteredArtworks.length > 0 && (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center border-b border-canvas-border pb-16">
-                  <div className="lg:col-span-8">
+            /* Curated Gallery Wall: Refined responsive grid respecting natural proportions & gallery rhythm */
+            <div className="grid grid-cols-1 min-[360px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 items-start">
+              {filteredArtworks.map((artwork, idx) => {
+                // Optional curatorial spotlight: Piece of the Month gets a 2-col span on medium/large screens
+                const isSpotlight = Boolean(artwork.isPieceOfTheMonth && idx === 0);
+                const colSpanClass = isSpotlight
+                  ? 'col-span-1 min-[360px]:col-span-2 md:col-span-2'
+                  : 'col-span-1';
+
+                return (
+                  <div key={artwork.id} className={colSpanClass}>
                     <ArtworkCard
-                      artwork={filteredArtworks[0]}
-                      variant="editorial"
-                      priority
-                      className="w-full"
+                      artwork={artwork}
+                      variant={isSpotlight ? 'editorial' : 'standard'}
+                      priority={idx < 4}
                     />
                   </div>
-                  <div className="lg:col-span-4 flex flex-col justify-center space-y-4">
-                    <span className="gallery-plaque text-xs text-charcoal-subtle uppercase tracking-gallery">
-                      CURATORIAL FOCUS
-                    </span>
-                    <h3 className="font-display text-2xl sm:text-3xl text-charcoal">
-                      &ldquo;{filteredArtworks[0].title}&rdquo;
-                    </h3>
-                    <p className="font-serif italic text-base text-charcoal-muted leading-relaxed">
-                      {filteredArtworks[0].description}
-                    </p>
-                    {filteredArtworks[0].story && (
-                      <p className="font-sans text-xs text-charcoal-subtle font-light leading-relaxed line-clamp-3">
-                        {filteredArtworks[0].story}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Asymmetric Alternating Gallery Wall */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 sm:gap-10 lg:gap-12">
-                {filteredArtworks.slice(1).map((artwork, idx) => {
-                  // Asymmetric spans: 7 cols vs 5 cols, 6 cols vs 6 cols
-                  const colSpanClass =
-                    idx % 4 === 0
-                      ? 'lg:col-span-7'
-                      : idx % 4 === 1
-                      ? 'lg:col-span-5'
-                      : idx % 4 === 2
-                      ? 'lg:col-span-5'
-                      : 'lg:col-span-7';
-
-                  return (
-                    <div key={artwork.id} className={colSpanClass}>
-                      <ArtworkCard artwork={artwork} variant="standard" />
-                    </div>
-                  );
-                })}
-              </div>
+                );
+              })}
             </div>
           ) : (
-            /* Grid Layout: Structured gallery grid while strictly respecting natural aspect ratios */
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10 lg:gap-12">
+            /* Balanced Discovery Grid: Uniform multi-column gallery layout */
+            <div className="grid grid-cols-1 min-[360px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 items-start">
               {filteredArtworks.map((artwork, idx) => (
-                <ArtworkCard
-                  key={artwork.id}
-                  artwork={artwork}
-                  variant="grid"
-                  priority={idx < 3}
-                />
+                <div key={artwork.id} className="col-span-1">
+                  <ArtworkCard
+                    artwork={artwork}
+                    variant="grid"
+                    priority={idx < 4}
+                  />
+                </div>
               ))}
             </div>
           )}
+
+          {/* Curatorial Dialogue & Bespoke Commission CTA Section */}
+          <div className="mt-20 pt-16 border-t border-canvas-border text-center max-w-2xl mx-auto">
+            <span className="gallery-plaque text-xs text-charcoal-subtle uppercase tracking-gallery block mb-3">
+              Bespoke Portfolios &bull; Studio Inquiries
+            </span>
+            <h3 className="font-display text-3xl sm:text-4xl text-charcoal mb-4">
+              Seeking a bespoke commission?
+            </h3>
+            <p className="font-sans text-sm text-charcoal-muted leading-relaxed font-light mb-8">
+              Collaborate directly with Darey to create a monumental canvas or site-specific artwork tailored to your collection.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Button href="/commission" variant="primary" size="md">
+                Create a Piece
+              </Button>
+              <Button href="/contact" variant="outline" size="md">
+                Contact Studio
+              </Button>
+            </div>
+          </div>
         </Container>
       </Section>
 

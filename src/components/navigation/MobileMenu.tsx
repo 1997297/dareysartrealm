@@ -7,6 +7,7 @@ import { X, ArrowUpRight } from 'lucide-react';
 import { NAV_ITEMS, SOCIAL_LINKS, CONTACT_INFO, SITE_NAME } from '@/lib/constants';
 import { Button } from '@/components/ui/Button';
 import { Logo } from '@/components/ui/Logo';
+import { BrandWordmark } from '@/components/ui/BrandWordmark';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -40,11 +41,8 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     };
   }, [isOpen, onClose]);
 
-  // Extended navigation items for mobile
-  const allNavItems = [
-    ...NAV_ITEMS,
-    { label: 'Contact', href: '/contact' },
-  ];
+  // Navigation items for mobile
+  const allNavItems = NAV_ITEMS;
 
   return (
     <AnimatePresence>
@@ -70,9 +68,11 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-[#121212] border border-charcoal/40 select-none p-1 shadow-sm">
                 <Logo variant="light" size={30} />
               </div>
-              <span className="font-display text-xl sm:text-2xl text-charcoal font-semibold tracking-gallery">
-                {SITE_NAME}
-              </span>
+              <BrandWordmark
+                variant="dark"
+                size="sm"
+                interactive={false}
+              />
             </Link>
 
             <button

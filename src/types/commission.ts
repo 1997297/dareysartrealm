@@ -75,6 +75,9 @@ export interface CommissionFormData {
   email: string;
   phone?: string;
   country: string;
+  countryCode?: string;
+  state?: string;
+  stateCode?: string;
   city?: string;
   specialNotes?: string;
 }

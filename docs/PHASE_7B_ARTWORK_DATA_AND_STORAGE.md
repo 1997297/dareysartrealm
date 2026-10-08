@@ -69,7 +69,7 @@ Original, 1-of-1 physical artworks created by Darey.
 | `price` | `NUMERIC(12,2)` | `NULL` | Acquisition price |
 | `currency` | `TEXT` | `DEFAULT 'USD' NOT NULL` | Settlement currency code |
 | `is_price_on_request`| `BOOLEAN` | `DEFAULT false NOT NULL` | Hide numeric figure for high-value inquiries |
-| `availability_status`| `TEXT` | `DEFAULT 'available' CHECK (availability_status IN ('available', 'reserved', 'sold'))` | Commercial availability state |
+| `availability_status`| `TEXT` | `DEFAULT 'available' CHECK (availability_status IN ('available', 'reserved', 'collected', 'commissioned', 'sold', 'draft'))` | Commercial availability state (`collected` canonical) |
 | `publication_status` | `TEXT` | `DEFAULT 'draft' CHECK (publication_status IN ('draft', 'published', 'archived'))` | Public gallery exhibition state |
 | `featured` | `BOOLEAN` | `DEFAULT false NOT NULL` | Promoted in Selected Works / Hero candidate |
 | `accent_color` | `TEXT` | `NULL` | Dominant palette hex code |
@@ -199,34 +199,41 @@ RLS is enabled on all 5 tables. The matrix enforces the following:
 | `media_assets` | `bucket_name = 'artworks-public'` | Denied | Allowed (`public.is_admin()`) |
 | `artwork_images` | Through parent published artwork | Denied | Allowed (`public.is_admin()`) |
 
-### Admin Draft Preview Workflow
-On public routes like `/artworks/[slug]`, public visitors receive a 404 response if the artwork is not published. If an authenticated administrator views `/artworks/[slug]?preview=true`, the client component detects `isAdmin` from `AuthContext` and allows them to preview unpublished drafts with an ambient admin warning badge.
+### Admin Draft Preview Workflow (Server-Side Authorization)
+On public routes like `/artworks/[slug]`, security is strictly enforced on the server via Next.js Server Components:
+- `src/app/artworks/[slug]/page.tsx` checks auth session cookies on the server before querying draft artwork.
+- When `?preview=true` is requested, it queries the user's profile role from Supabase. If the session is missing or `role !== 'admin'`, the server immediately renders a 404 (`notFound()`).
+- Public visitors without `preview=true` only query published artworks (`publication_status = 'published'`).
+- Draft payloads are NEVER sent to unauthorized browsers or exposed in client bundles.
+- Authenticated admins viewing drafts see an amber studio preview banner with publication status and direct links back to the Studio Editor.
 
 ---
 
-## 6. Service Layer Implementation
+## 6. Service Layer Implementation & Hardening
 
 Three production services mediate all database and storage communication:
 
 1. **`src/services/artworkService.ts`**:
    - `getAll()`: Relational query selecting `artworks` joined with `artwork_images` and `artwork_collections(collection)`.
    - `getFeatured()` / `getSelected()` / `getCollected()`: Status- and flag-filtered curated sets.
-   - `getHeroArtwork()`: 3-tier cascade fallback (`echoes-of-home` -> `featured = true` -> first published artwork).
-   - `getBySlug(slug)` / `getById(id)`: Slugs and ID lookups.
+   - `getHeroArtwork()`: Fully data-driven hero resolution. Prioritizes published artwork marked `featured = true`, then first published artwork, or returns `null` (rendering an authentic architectural studio empty state). All hardcoded mock slugs (`echoes-of-home`) have been removed.
+   - `getBySlug(slug, options)` / `getById(id)`: Slug and ID lookups with publication status filtering.
    - `filter(filters, options)`: Multi-facet query handling medium, orientation, dimensions, price bounds, search query, and publication status.
-   - `create(data)` / `update(id, data)` / `archive(id)` / `delete(id)` / `duplicate(id)`: Concurrency-safe CRUD mutations.
+   - `create(data)` / `update(id, data)` / `archive(id)` / `delete(id)` / `duplicate(id)`: Concurrency-safe mutations with descriptive slug collision error handling (`23505`).
+   - **Production Mock Policy**: `isDevMockEnabled()` strictly returns `false` in production (`NODE_ENV === 'production'`). Queries fail safely returning `[]` or `null` without ever returning mock paintings.
 
 2. **`src/services/collectionService.ts`**:
    - `getAll()`: Reads collections with dynamic artwork counts from `artwork_collections`.
-   - `getFeaturedCollection()`: Priority resolution for primary homepage exhibition room.
+   - `getFeaturedCollection()`: Priority resolution for primary exhibition room.
    - `getBySlug(slug)` / `getArtworks(slug)`: Room and member artworks loader.
    - `search(query)`: Multi-field text search over titles, subtitles, statements, and descriptions.
-   - `create(data)` / `update(id, data)` / `delete(id)`: Collection CRUD.
+   - `create(data)` / `update(id, data)` / `delete(id)`: Collection CRUD with descriptive slug collision handling.
+   - **Production Mock Policy**: Fails safely to empty sets in production.
 
 3. **`src/services/mediaService.ts`**:
-   - `uploadFile(file, options)`: Uploads to Supabase Storage, calculates metadata, records row in `public.media_assets`, and returns public URL.
+   - `uploadFile(file, options)`: Uploads to Supabase Storage, records row in `public.media_assets`, and returns public URL.
    - `getAll(category)`: Queries media library with category filter.
-   - `delete(id)`: Removes file from Supabase Storage and deletes database metadata row.
+   - `delete(id)`: **Referential Delete Safety**: Checks both `artwork_images` and `collections` for active references; blocks deletion if an asset is currently in use across the gallery.
 
 ---
 
@@ -234,19 +241,30 @@ Three production services mediate all database and storage communication:
 
 - **`src/components/studio/ArtworkEditor.tsx`**:
   - Direct file uploads via `<input type="file">` and `mediaService.uploadFile()`.
-  - Live upload progress bar and status feedback.
-  - Multi-perspective image tagging (`primary`, `detail`, `texture`, `angle`, `framed`, etc.).
+  - Canonical `collected` availability status supported alongside `available`, `reserved`, `commissioned`, `draft`.
+  - Descriptive error alerts on save failures.
   - Publish readiness validation: blocks publishing if medium, physical dimensions, price, or photography are absent.
 - **`src/components/studio/CollectionEditor.tsx`**:
   - Direct cover photography upload via `mediaService.uploadFile()`.
   - Multi-artwork selector linking works through `artwork_collections`.
 - **`src/app/studio/media/page.tsx`**:
-  - Replaced simulated file dialog with real file picker.
-  - Uploads directly to `artworks-public` with instant library refresh.
+  - Media library management with category filtering and upload capabilities.
+  - Referential deletion guard prevents removing active gallery images.
 
 ---
 
-## 8. Graceful Fallbacks & Offline Capability
+## 8. Graceful Fallbacks & 3-Tier Content Hierarchy
 
-Every service tests `isSupabaseConfigured()`. When environment variables (`NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`) are present, production queries run. When unconfigured during initial clones, builds, or CI test runners, services gracefully fall back to local in-memory storage without throwing unhandled exceptions.
+To reconcile real database infrastructure with visual completeness:
+
+1. **Hierarchy Tier 1 — Real CMS-Managed Content**:
+   - Supabase database records created and published via Artrealm Studio are authoritative.
+2. **Hierarchy Tier 2 — Approved Initial Project Content**:
+   - Genuine, approved visual artwork files and photographs deliberately supplied by Darey (`hero.jpeg`, `pic1`–`pic30`, architectural service assets).
+   - Serves as initial content when database tables have not yet been seeded, ensuring the artistic experience remains visually complete and intentional.
+   - Distinct from fictional mock data: approved artwork files are authentic project assets. No fictional business facts (fake buyers, invented prices) are fabricated.
+3. **Hierarchy Tier 3 — Intentional Artistic Empty States**:
+   - Branded curation notices rendered only if initial content is explicitly cleared or disabled.
+
+For complete specifications, refer to [docs/CONTENT_AND_CMS_ARCHITECTURE.md](file:///c:/Users/Young%20Duke/Documents/VS%20Codes%20Doc/Darey%27s%20Artrealm/docs/CONTENT_AND_CMS_ARCHITECTURE.md).
 

@@ -1,13 +1,30 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Sparkles, ShieldCheck, Palette, Layers, Eye } from 'lucide-react';
 import { Container } from '@/components/layout/Container';
 import { Button } from '@/components/ui/Button';
+import { siteContentService } from '@/services/siteContentService';
+import { INITIAL_ABOUT_CONFIG } from '@/data/initialContent';
+import { AboutPageConfig } from '@/types/siteContent';
 
 export default function AboutPage() {
+  const [config, setConfig] = useState<AboutPageConfig>(INITIAL_ABOUT_CONFIG);
+
+  useEffect(() => {
+    async function loadContent() {
+      try {
+        const data = await siteContentService.getAboutConfig();
+        if (data) setConfig(data);
+      } catch (err) {
+        console.error('Error loading about config:', err);
+      }
+    }
+    loadContent();
+  }, []);
+
   return (
     <div className="min-h-screen bg-canvas pt-28 pb-24">
       <Container size="wide">
@@ -18,10 +35,10 @@ export default function AboutPage() {
               THE ARTIST &amp; THE STUDIO
             </span>
             <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-charcoal font-normal tracking-tight leading-[1.04]">
-              Art that provokes feeling before understanding.
+              {config.headline || 'Art that provokes feeling before understanding.'}
             </h1>
             <p className="mt-8 text-base sm:text-lg text-charcoal-muted font-light leading-relaxed">
-              Darey&apos;s Artrealm is the independent creative universe of contemporary artist Darey. A sanctuary where original paintings, architectural interventions, and bespoke commissions are crafted to explore human presence, tactile memory, and raw materiality.
+              {config.subheadline || "Darey's Artrealm is the independent creative universe of contemporary artist Darey. A sanctuary where original paintings, architectural interventions, and bespoke commissions are crafted to explore human presence, tactile memory, and raw materiality."}
             </p>
           </div>
         </div>
@@ -101,7 +118,7 @@ export default function AboutPage() {
                 Dialogue with Architecture
               </h3>
               <p className="text-xs sm:text-sm text-charcoal-muted font-light leading-relaxed">
-                Art does not exist in a vacuum. Darey’s creations are conceived with modern interiors in mind—complementing natural timber, polished concrete, stone masonry, and high architectural ceilings.
+                Art does not exist in a vacuum. Darey’s creations are conceived with modern interiors in mind, complementing natural timber, polished concrete, stone masonry, and high architectural ceilings.
               </p>
             </div>
           </div>
@@ -139,7 +156,7 @@ export default function AboutPage() {
 
           <div className="lg:col-span-4 flex justify-start lg:justify-end">
             <Button href="/artworks" variant="primary" size="lg">
-              Explore Available Works
+              View Artworks
             </Button>
           </div>
         </div>
@@ -157,10 +174,10 @@ export default function AboutPage() {
           </p>
           <div className="flex justify-center gap-4 pt-2">
             <Button href="/commission" variant="primary">
-              Begin a Commission
+              Create a Piece
             </Button>
             <Button href="/contact" variant="secondary">
-              Contact the Studio
+              Contact Studio
             </Button>
           </div>
         </div>

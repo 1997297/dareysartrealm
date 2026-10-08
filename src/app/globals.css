@@ -1,4 +1,5 @@
-/* Local fonts are loaded via next/font/local in src/lib/fonts.ts — no Google Fonts import needed */
+/* Local fonts are loaded via next/font/local in src/lib/fonts.ts */
+@import url('https://fonts.googleapis.com/css2?family=Alex+Brush&family=Kaushan+Script&display=swap');
 @import '../styles/tokens.css';
 
 @tailwind base;
@@ -95,7 +96,9 @@
     animation: marquee-scroll 45s linear infinite;
   }
 
-  .animate-marquee-infinite:hover {
+  .animate-marquee-infinite:hover,
+  .animate-marquee-infinite:active,
+  .animate-marquee-infinite:focus-within {
     animation-play-state: paused;
   }
 

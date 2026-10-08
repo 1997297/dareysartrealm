@@ -25,7 +25,7 @@ export function ServicesPreview({ services }: ServicesPreviewProps) {
           align="between"
           action={
             <Button href="/services" variant="editorial" className="text-sm">
-              Explore all services &rarr;
+              View Services &rarr;
             </Button>
           }
         />
@@ -47,9 +47,6 @@ export function ServicesPreview({ services }: ServicesPreviewProps) {
                 <div className="flex items-center justify-between border-b border-canvas-border pb-4 mb-5">
                   <span className="font-mono text-sm font-semibold text-charcoal">
                     {service.number}
-                  </span>
-                  <span className="gallery-plaque text-[0.625rem] text-charcoal-subtle">
-                    PRACTICE
                   </span>
                 </div>
 

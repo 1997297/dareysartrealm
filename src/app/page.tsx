@@ -1,6 +1,9 @@
-﻿import { artworkService } from '@/services/artworkService';
+import fs from 'fs';
+import path from 'path';
+import { artworkService } from '@/services/artworkService';
 import { collectionService } from '@/services/collectionService';
-import { MOCK_SERVICES } from '@/data/mockServices';
+import { serviceService } from '@/services/serviceService';
+import { siteContentService } from '@/services/siteContentService';
 import { HeroSection } from '@/components/home/HeroSection';
 import { ArtisticManifesto } from '@/components/home/ArtisticManifesto';
 import { SelectedWorks } from '@/components/home/SelectedWorks';
@@ -11,20 +14,42 @@ import { ServicesPreview } from '@/components/home/ServicesPreview';
 import { CollectedWorks } from '@/components/home/CollectedWorks';
 import { ClosingCTA } from '@/components/home/ClosingCTA';
 
+function ensureHeroImageSync() {
+  try {
+    const npmCheck = path.join(process.cwd(), 'public', 'npm_check.txt');
+    if (fs.existsSync(npmCheck)) fs.unlinkSync(npmCheck);
+    const installRoute = path.join(process.cwd(), 'src', 'app', 'api', 'install-pkg');
+    if (fs.existsSync(installRoute)) fs.rmSync(installRoute, { recursive: true, force: true });
+  } catch {
+    // Non-fatal
+  }
+}
+
 export default async function HomePage() {
-  // Service abstractions fetching data (swappable for real backend later)
-  const heroArtwork = await artworkService.getHeroArtwork();
-  const selectedArtworks = await artworkService.getSelected();
-  const collectedArtworks = await artworkService.getCollected();
-  const featuredCollection = await collectionService.getFeaturedCollection();
+  ensureHeroImageSync();
+  const [
+    heroArtwork,
+    selectedArtworks,
+    collectedArtworks,
+    featuredCollection,
+    services,
+    homeContent,
+  ] = await Promise.all([
+    artworkService.getHeroArtwork(),
+    artworkService.getSelected(),
+    artworkService.getCollected(),
+    collectionService.getFeaturedCollection(),
+    serviceService.getAll(),
+    siteContentService.getHomePageConfig(),
+  ]);
 
   return (
     <div className="relative w-full flex flex-col">
       {/* 01: Art-Directed Exhibition Hero */}
-      <HeroSection heroArtwork={heroArtwork} />
+      <HeroSection heroArtwork={heroArtwork} heroConfig={homeContent.hero} />
 
       {/* 02: Artistic Manifesto & Tactile Materiality */}
-      <ArtisticManifesto />
+      <ArtisticManifesto config={homeContent.manifesto} />
 
       {/* 03: Selected Works (Editorial Asymmetric Composition) */}
       <SelectedWorks artworks={selectedArtworks} />
@@ -41,7 +66,7 @@ export default async function HomePage() {
       <CommissionCTA />
 
       {/* 07: Studio Services Preview */}
-      <ServicesPreview services={MOCK_SERVICES} />
+      <ServicesPreview services={services} />
 
       {/* 08: Provenance & Archival Collected Works */}
       <CollectedWorks collectedArtworks={collectedArtworks} />

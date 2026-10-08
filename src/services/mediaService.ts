@@ -3,8 +3,12 @@ import { safeLocalStorage, STORAGE_KEYS } from '@/lib/storage';
 import { INITIAL_STUDIO_MEDIA } from '@/data/mockStudioData';
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client';
 import { MediaAssetRow } from '@/types/supabase';
+import { isDevMockEnabled } from './artworkService';
 
 function getStoredMedia(): StudioMediaAsset[] {
+  if (!isDevMockEnabled()) {
+    return [];
+  }
   return safeLocalStorage.getItem<StudioMediaAsset[]>(
     STORAGE_KEYS.STUDIO_MEDIA,
     INITIAL_STUDIO_MEDIA
@@ -12,7 +16,9 @@ function getStoredMedia(): StudioMediaAsset[] {
 }
 
 function setStoredMedia(media: StudioMediaAsset[]): void {
-  safeLocalStorage.setItem(STORAGE_KEYS.STUDIO_MEDIA, media);
+  if (isDevMockEnabled()) {
+    safeLocalStorage.setItem(STORAGE_KEYS.STUDIO_MEDIA, media);
+  }
 }
 
 function mapRowToStudioAsset(row: MediaAssetRow): StudioMediaAsset {
@@ -63,11 +69,24 @@ export const mediaService = {
         if (!error && data) {
           return data.map(mapRowToStudioAsset);
         }
+        if (error) {
+          console.error('[Production Data Error] Supabase media fetch failed:', error.message);
+        }
       } catch (err) {
-        console.warn('Supabase media fetch failed, using fallback:', err);
+        console.error('[Production Data Error] Supabase media fetch threw exception:', err);
+      }
+    } else {
+      if (!isDevMockEnabled()) {
+        console.error(
+          '[Production Configuration Error] Supabase is not configured. Media mock fallback is strictly disabled in production.'
+        );
       }
     }
-    return getStoredMedia();
+
+    if (isDevMockEnabled()) {
+      return getStoredMedia();
+    }
+    return INITIAL_STUDIO_MEDIA;
   },
 
   /**
@@ -86,17 +105,22 @@ export const mediaService = {
         if (!error && data) {
           return mapRowToStudioAsset(data);
         }
+        return null;
       } catch (err) {
-        console.warn('Supabase getById failed, using fallback:', err);
+        console.error(`[Production Data Error] getById('${id}') failed:`, err);
+        return null;
       }
     }
-    const list = getStoredMedia();
-    return list.find((m) => m.id === id) || null;
+
+    if (isDevMockEnabled()) {
+      const list = getStoredMedia();
+      return list.find((m) => m.id === id) || null;
+    }
+    return INITIAL_STUDIO_MEDIA.find((m) => m.id === id) || null;
   },
 
   /**
    * Uploads a real file to Supabase Storage and records metadata in media_assets.
-   * If unconfigured, falls back to local storage simulation.
    */
   async uploadFile(
     file: File,
@@ -131,14 +155,19 @@ export const mediaService = {
         throw new Error(`Storage upload failed: ${uploadError.message}`);
       }
 
-      // 3. Resolve Public URL
-      const { data: publicUrlData } = supabase.storage
-        .from(bucket)
-        .getPublicUrl(storagePath);
-      const publicUrl = publicUrlData.publicUrl;
+      // 3. Resolve Public URL (only for public bucket)
+      let publicUrl: string | null = null;
+      if (bucket === 'artworks-public') {
+        const { data: publicUrlData } = supabase.storage
+          .from(bucket)
+          .getPublicUrl(storagePath);
+        publicUrl = publicUrlData.publicUrl;
+      }
 
       // 4. Insert row into public.media_assets
-      const { data: insertedRow, error: insertError } = await supabase
+      const { data: userAuth } = await supabase.auth.getUser();
+
+      const { data: row, error: dbError } = await supabase
         .from('media_assets')
         .insert({
           storage_bucket: bucket,
@@ -147,36 +176,48 @@ export const mediaService = {
           title: options.title || file.name,
           filename: file.name,
           mime_type: file.type,
-          file_size: file.size,
+          file_size: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
           width: options.width ?? null,
           height: options.height ?? null,
           category,
-          alt_text: options.altText || options.title || '',
+          alt_text: options.altText || options.title || file.name,
           caption: options.caption || null,
+          uploaded_by: userAuth.user?.id || null,
         })
         .select()
         .single();
 
-      if (insertError || !insertedRow) {
-        // Rollback uploaded storage object on metadata failure
+      if (dbError || !row) {
+        // Rollback storage file on metadata failure
         await supabase.storage.from(bucket).remove([storagePath]);
-        throw new Error(`Failed to save media metadata: ${insertError?.message}`);
+        throw new Error(`Failed to save media metadata: ${dbError?.message}`);
       }
 
-      return mapRowToStudioAsset(insertedRow);
+      return mapRowToStudioAsset(row);
     }
 
-    // Fallback: Local simulation when Supabase is not configured
-    const localUrl = URL.createObjectURL(file);
+    // Local / Dev Fallback: persist as base64 Data URL so it remains valid across page reloads
+    let persistentUrl: string;
+    try {
+      persistentUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    } catch {
+      persistentUrl = URL.createObjectURL(file);
+    }
+
     const newAsset: StudioMediaAsset = {
-      id: `med-${Date.now()}`,
+      id: `med-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       title: options.title || file.name,
       filename: file.name,
-      url: localUrl,
+      url: persistentUrl,
       category,
-      fileSize: file.size,
-      width: options.width,
-      height: options.height,
+      fileSize: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
+      width: options.width || 1200,
+      height: options.height || 900,
       mimeType: file.type,
       altText: options.altText || options.title || '',
       caption: options.caption,
@@ -190,52 +231,19 @@ export const mediaService = {
   },
 
   /**
-   * Legacy / simulated upload for backwards compatibility with existing UI components
+   * Uploads multiple media assets concurrently to storage
    */
-  async upload(
-    assetData: Omit<StudioMediaAsset, 'id' | 'uploadedAt' | 'usageCount'>
-  ): Promise<StudioMediaAsset> {
-    if (isSupabaseConfigured()) {
-      try {
-        const supabase = createClient();
-        const { data, error } = await supabase
-          .from('media_assets')
-          .insert({
-            storage_bucket: 'artworks-public',
-            storage_path: `legacy/${Date.now()}-${assetData.filename}`,
-            public_url: assetData.url,
-            title: assetData.title,
-            filename: assetData.filename,
-            mime_type: assetData.mimeType,
-            file_size: assetData.fileSize,
-            width: assetData.width ?? null,
-            height: assetData.height ?? null,
-            category: assetData.category,
-            alt_text: assetData.altText,
-            caption: assetData.caption || null,
-          })
-          .select()
-          .single();
-
-        if (!error && data) {
-          return mapRowToStudioAsset(data);
-        }
-      } catch (err) {
-        console.warn('Supabase upload record failed, using fallback:', err);
-      }
-    }
-
-    const list = getStoredMedia();
-    const newAsset: StudioMediaAsset = {
-      ...assetData,
-      id: `med-${Date.now()}`,
-      uploadedAt: new Date().toISOString(),
-      usageCount: 0,
-      usageReferences: [],
-    };
-    const updated = [newAsset, ...list];
-    setStoredMedia(updated);
-    return newAsset;
+  async uploadMultipleFiles(
+    files: File[],
+    options: Omit<UploadOptions, 'title'> & { titlePrefix?: string }
+  ): Promise<StudioMediaAsset[]> {
+    const uploadPromises = files.map((file, idx) =>
+      this.uploadFile(file, {
+        ...options,
+        title: `${options.titlePrefix || 'Artwork Perspective'} ${idx + 1}`,
+      })
+    );
+    return Promise.all(uploadPromises);
   },
 
   /**
@@ -243,27 +251,32 @@ export const mediaService = {
    */
   async update(id: string, updates: Partial<StudioMediaAsset>): Promise<StudioMediaAsset | null> {
     if (isSupabaseConfigured()) {
-      try {
-        const supabase = createClient();
-        const payload: Record<string, unknown> = {};
-        if (updates.title !== undefined) payload.title = updates.title;
-        if (updates.altText !== undefined) payload.alt_text = updates.altText;
-        if (updates.caption !== undefined) payload.caption = updates.caption;
-        if (updates.category !== undefined) payload.category = updates.category;
+      const supabase = createClient();
+      const payload: Record<string, unknown> = {};
+      if (updates.title !== undefined) payload.title = updates.title;
+      if (updates.altText !== undefined) payload.alt_text = updates.altText;
+      if (updates.caption !== undefined) payload.caption = updates.caption;
+      if (updates.category !== undefined) payload.category = updates.category;
 
-        const { data, error } = await supabase
-          .from('media_assets')
-          .update(payload)
-          .eq('id', id)
-          .select()
-          .single();
+      const { data, error } = await supabase
+        .from('media_assets')
+        .update(payload)
+        .eq('id', id)
+        .select()
+        .single();
 
-        if (!error && data) {
-          return mapRowToStudioAsset(data);
-        }
-      } catch (err) {
-        console.warn('Supabase media update failed, using fallback:', err);
+      if (error) {
+        throw new Error(`Media metadata update failed: ${error.message}`);
       }
+
+      if (data) {
+        return mapRowToStudioAsset(data);
+      }
+      return null;
+    }
+
+    if (!isDevMockEnabled()) {
+      throw new Error('Supabase is not configured.');
     }
 
     const list = getStoredMedia();
@@ -280,36 +293,67 @@ export const mediaService = {
   },
 
   /**
-   * Deletes a media asset safely from database and storage
+   * Deletes a media asset safely from database and storage.
+   * Safety check: blocks deletion if the asset is actively referenced by artworks or collections.
    */
   async delete(id: string): Promise<boolean> {
     if (isSupabaseConfigured()) {
-      try {
-        const supabase = createClient();
-        // Fetch to find storage path
-        const { data: asset } = await supabase
-          .from('media_assets')
-          .select('*')
-          .eq('id', id)
-          .single();
+      const supabase = createClient();
+      // 1. Fetch asset to find storage path and URL
+      const { data: asset, error: fetchErr } = await supabase
+        .from('media_assets')
+        .select('*')
+        .eq('id', id)
+        .single();
 
-        if (asset) {
-          // Remove from storage bucket
-          await supabase.storage
-            .from(asset.storage_bucket)
-            .remove([asset.storage_path]);
-
-          // Remove database record
-          const { error } = await supabase
-            .from('media_assets')
-            .delete()
-            .eq('id', id);
-
-          return !error;
-        }
-      } catch (err) {
-        console.warn('Supabase media delete failed, using fallback:', err);
+      if (fetchErr || !asset) {
+        throw new Error('Media asset not found.');
       }
+
+      // 2. REFERENTIAL INTEGRITY SAFETY CHECK:
+      // Check if image is in active use in artwork_images or collections
+      const [{ count: imgCount }, { count: colCount }] = await Promise.all([
+        supabase
+          .from('artwork_images')
+          .select('*', { count: 'exact', head: true })
+          .or(`media_asset_id.eq.${id},image_url.eq.${asset.public_url || '___none___'}`),
+        supabase
+          .from('collections')
+          .select('*', { count: 'exact', head: true })
+          .eq('cover_image_url', asset.public_url || '___none___'),
+      ]);
+
+      const totalActiveRefs = (imgCount || 0) + (colCount || 0);
+      if (totalActiveRefs > 0) {
+        throw new Error(
+          `Cannot delete "${asset.filename}". It is currently linked to ${imgCount || 0} artwork image(s) and ${colCount || 0} collection cover(s). Please detach or replace the asset before deleting.`
+        );
+      }
+
+      // 3. Remove from storage bucket
+      const { error: storageErr } = await supabase.storage
+        .from(asset.storage_bucket)
+        .remove([asset.storage_path]);
+
+      if (storageErr) {
+        console.warn('Storage file deletion warning:', storageErr.message);
+      }
+
+      // 4. Remove database record
+      const { error: dbErr } = await supabase
+        .from('media_assets')
+        .delete()
+        .eq('id', id);
+
+      if (dbErr) {
+        throw new Error(`Media record deletion failed: ${dbErr.message}`);
+      }
+
+      return true;
+    }
+
+    if (!isDevMockEnabled()) {
+      throw new Error('Supabase is not configured.');
     }
 
     const list = getStoredMedia();

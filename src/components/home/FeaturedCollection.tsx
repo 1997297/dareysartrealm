@@ -86,7 +86,7 @@ export function FeaturedCollection({ collection }: FeaturedCollectionProps) {
                   variant="primary"
                   size="md"
                 >
-                  Explore collection &rarr;
+                  View Collection &rarr;
                 </Button>
 
                 <span className="text-xs text-charcoal-subtle tracking-gallery">

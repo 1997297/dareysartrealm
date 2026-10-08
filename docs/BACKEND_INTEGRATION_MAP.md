@@ -38,7 +38,7 @@ This document establishes the official integration blueprint for transitioning t
 
 | Touchpoint | Implementation Status | Target Backend Route / Query | Security & Schema Enforcement |
 | :--- | :--- | :--- | :--- |
-| **Public Catalog** (`/artworks`, `/artworks/[slug]`) | **LIVE** | `supabase.from('artworks').select('*, artwork_images(*), artwork_collections(...)').eq('publication_status', 'published')` | RLS policy restricts anonymous and collector queries strictly to `publication_status = 'published'`. Admins can preview drafts via `?preview=true`. |
+| **Public Catalog** (`/artworks`, `/artworks/[slug]`) | **LIVE** | `supabase.from('artworks').select('*, artwork_images(*), artwork_collections(...)').eq('publication_status', 'published')` | RLS policy restricts anonymous and collector queries strictly to `publication_status = 'published'`. Server Component draft gate verifies admin session before previewing unpublished works on `?preview=true`. |
 | **Curated Collections** (`/collections`, `/collections/[slug]`) | **LIVE** | `supabase.from('collections').select('*').eq('publication_status', 'published')` | Curatorial exhibition rooms. RLS restricts non-admins to published rooms. Junction table `artwork_collections` provides ordered relationships. |
 | **Artwork Images & Multi-Perspective Zoom** (`/artworks/[slug]`) | **LIVE** | `supabase.from('artwork_images').select('*').order('sort_order')` | Multi-perspective views (`primary`, `detail`, `texture`, `angle`, `framed`) stored in `public.artwork_images` pointing to Supabase Storage CDN URLs. |
 | **Supabase Storage Buckets** | **LIVE** | `artworks-public` (15MB max, public read, admin write) & `artworks-private` (100MB max, admin-only read/write) | Storage RLS ensures public assets can be rendered sitewide while private master high-res files require admin authorization. |
@@ -115,22 +115,25 @@ This document establishes the official integration blueprint for transitioning t
 
 ---
 
-## 8. Artrealm Studio (Operational Administration)
+## 8. Artrealm Studio (Operational Administration — STATUS: IMPLEMENTED IN PHASE 7C)
 
-**Target Service:** Supabase Database (Admin Service Role) + Storage + Analytics  
-**Current Frontend Abstraction:** `src/app/studio/*`, `src/data/mockStudioData.ts`, `src/types/studio.ts`
+**Target Service:** Supabase Database (Admin Service Role) + Storage (`artworks-public`, `artworks-private`)  
+**Implementation Files:**
+- Database Migration: `supabase/migrations/20261007000001_create_cms_and_site_content.sql`
+- Production Services: `src/services/artworkService.ts`, `src/services/collectionService.ts`, `src/services/serviceService.ts`, `src/services/siteContentService.ts`, `src/services/settingsService.ts`, `src/services/contentService.ts`, `src/services/mediaService.ts`
+- Studio Views: `src/app/studio/page.tsx`, `src/app/studio/artworks/page.tsx`, `src/components/studio/ArtworkEditor.tsx`, `src/app/studio/collections/page.tsx`, `src/components/studio/CollectionEditor.tsx`, `src/app/studio/pages/page.tsx`, `src/app/studio/services/page.tsx`, `src/app/studio/media/page.tsx`, `src/app/studio/settings/page.tsx`
+- Documentation: `docs/PHASE_7C_ARTREALM_STUDIO_AND_CMS.md`
 
-| Operational Tool | Current Frontend Module | Target Backend Implementation |
+| Operational Tool | Implementation Status | Backend Implementation |
 | :--- | :--- | :--- |
-| **Dashboard Metrics** (`/studio`) | Mock metric cards and recent ledger | Supabase RPC / SQL aggregation view `studio_dashboard_metrics` calculating real revenue, open commissions, pending orders, and active inquiries. |
-| **Artwork Catalog CMS** (`/studio/artworks`) | Mock list with add/edit modals | Full CRUD over `artworks` table with image upload pipeline to Supabase Storage. |
-| **Collection Curator** (`/studio/collections`) | Mock collection management | CRUD over `collections` table with ordering sequence. |
-| **Order Management** (`/studio/orders`) | Mock order fulfillment updates | Admin updates courier name, dispatch tracking number, and dispatches shipping notification email. |
-| **Commission Pipeline** (`/studio/commissions`) | Mock Kanban / progress update | Manages lifecycle, milestones, deposit milestones, and final delivery confirmation. |
-| **Collector CRM** (`/studio/collectors`) | Mock collector database | Aggregated view of patron lifetime value (LTV), acquisition count, and VIP status tiers. |
-| **Media Library** (`/studio/media`) | Mock file cards with upload modal | Direct file manager over Supabase Storage buckets (`artworks`, `press`, `documents`). |
-| **Review Moderation** (`/studio/reviews`) | Simulated reviews list with status toggle | Moderates feedback into `reviews` table (`approved`, `pending`, `hidden`). |
-| **Studio Settings & Profile** (`/studio/settings`) | Mock CMS key-value store | Table `studio_settings` containing public studio coordinates, currency configurations, and notification webhooks. |
+| **Dashboard Metrics & Curatorial Queue** (`/studio`) | **LIVE** | Real-time content metrics: published available, drafts, reserved, collected, collections count, and media assets. Piece of the Month curatorial card, Metadata Integrity Queue. |
+| **Artwork Catalog CMS** (`/studio/artworks`, `/studio/artworks/[id]`) | **LIVE** | Full CRUD over `public.artworks` with draft/publish validation, Piece of the Month quick-toggle, sequential ID generation (`DAR-YYYY-XXX`), and arbitrary perspective upload. |
+| **Collection Curator** (`/studio/collections`, `/studio/collections/[id]`) | **LIVE** | Full CRUD over `public.collections` with publication status badges (`published`, `draft`, `archived`) and interactive artwork sequence reordering (`displayOrder`). |
+| **Editorial Pages CMS** (`/studio/pages`) | **LIVE** | Persists homepage copy, about manifesto/bio, and studio contact logistics into Supabase `public.site_settings` JSONB store. |
+| **Studio Capabilities & Services** (`/studio/services`) | **LIVE** | Persists and manages architectural and fine art disciplines in Supabase `public.services`. |
+| **Media Library** (`/studio/media`) | **LIVE** | Direct file management over Supabase Storage (`artworks-public`) with reference-protected deletion against `artwork_images` and `collections`. |
+| **Studio Settings & Policies** (`/studio/settings`) | **LIVE** | Persists operational parameters, currency defaults, and freight crating policies into Supabase `public.site_settings`. |
+| **Order & Commission Modules** (`/studio/orders`, `/studio/commissions`) | **ROADMAP** | Deferred to subsequent Commerce phases (Phase 7D/7E). |
 
 ---
 

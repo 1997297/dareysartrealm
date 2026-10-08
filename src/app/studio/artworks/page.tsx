@@ -16,6 +16,8 @@ import {
   Eye,
   Check,
   X,
+  Sparkles,
+  Globe,
 } from 'lucide-react';
 import { StatusBadge } from '@/components/studio/StatusBadge';
 import { ConfirmationModal } from '@/components/studio/ConfirmationModal';
@@ -51,8 +53,8 @@ export default function StudioArtworksPage() {
     try {
       setLoading(true);
       const [allArt, allCols] = await Promise.all([
-        artworkService.getAll(),
-        collectionService.getAll(),
+        artworkService.getAll({ includeUnpublished: true }),
+        collectionService.getAll({ includeUnpublished: true }),
       ]);
       setArtworks(allArt);
       setCollections(allCols);
@@ -81,6 +83,24 @@ export default function StudioArtworksPage() {
     await artworkService.archive(archiveTarget.id);
     showFeedback(`Archived "${archiveTarget.title}".`);
     setArchiveTarget(null);
+    loadArtworks();
+  }
+
+  async function handleTogglePieceOfTheMonth(artwork: Artwork) {
+    if (artwork.isPieceOfTheMonth) {
+      await artworkService.update(artwork.id, { isPieceOfTheMonth: false });
+      showFeedback(`Cleared Piece of the Month designation from "${artwork.title}".`);
+    } else {
+      await artworkService.setPieceOfTheMonth(artwork.id);
+      showFeedback(`Designated "${artwork.title}" as Piece of the Month.`);
+    }
+    loadArtworks();
+  }
+
+  async function handleTogglePublish(artwork: Artwork) {
+    const nextStatus = artwork.publicationStatus === 'published' ? 'draft' : 'published';
+    await artworkService.update(artwork.id, { publicationStatus: nextStatus });
+    showFeedback(`Artwork "${artwork.title}" set to ${nextStatus}.`);
     loadArtworks();
   }
 
@@ -300,16 +320,24 @@ export default function StudioArtworksPage() {
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                 />
                 {/* Badges Over Image */}
-                <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-                  <StatusBadge status={art.status} size="sm" />
-                  {art.publicationStatus === 'draft' && (
-                    <span className="px-2 py-0.5 rounded-full text-[0.625rem] font-mono uppercase bg-stone-900/80 text-stone-100 backdrop-blur-sm">
-                      Draft
-                    </span>
-                  )}
-                  {art.publicationStatus === 'archived' && (
-                    <span className="px-2 py-0.5 rounded-full text-[0.625rem] font-mono uppercase bg-rose-900/80 text-rose-100 backdrop-blur-sm">
-                      Archived
+                <div className="absolute top-2.5 left-2.5 flex flex-col items-start gap-1">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <StatusBadge status={art.status} size="sm" />
+                    {art.publicationStatus === 'draft' && (
+                      <span className="px-2 py-0.5 rounded-full text-[0.625rem] font-mono uppercase bg-stone-900/80 text-stone-100 backdrop-blur-sm">
+                        Draft
+                      </span>
+                    )}
+                    {art.publicationStatus === 'archived' && (
+                      <span className="px-2 py-0.5 rounded-full text-[0.625rem] font-mono uppercase bg-rose-900/80 text-rose-100 backdrop-blur-sm">
+                        Archived
+                      </span>
+                    )}
+                  </div>
+                  {art.isPieceOfTheMonth && (
+                    <span className="px-2 py-0.5 rounded-md text-[0.625rem] font-mono uppercase bg-amber-500 text-stone-950 font-semibold flex items-center gap-1 shadow-sm">
+                      <Sparkles className="w-2.5 h-2.5" />
+                      <span>Piece of the Month</span>
                     </span>
                   )}
                 </div>
@@ -361,6 +389,24 @@ export default function StudioArtworksPage() {
                   </p>
 
                   <div className="flex items-center gap-1 text-charcoal-muted">
+                    <button
+                      onClick={() => handleTogglePieceOfTheMonth(art)}
+                      className={`p-1.5 rounded hover:bg-canvas-subtle touch-target flex items-center justify-center ${
+                        art.isPieceOfTheMonth ? 'text-amber-600 bg-amber-50' : 'hover:text-amber-600'
+                      }`}
+                      title={art.isPieceOfTheMonth ? 'Clear Piece of the Month' : 'Designate Piece of the Month'}
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleTogglePublish(art)}
+                      className={`p-1.5 rounded hover:bg-canvas-subtle touch-target flex items-center justify-center ${
+                        art.publicationStatus === 'published' ? 'text-emerald-700' : 'text-stone-400'
+                      }`}
+                      title={art.publicationStatus === 'published' ? 'Unpublish to draft' : 'Publish artwork'}
+                    >
+                      <Globe className="w-3.5 h-3.5" />
+                    </button>
                     <Link
                       href={`/studio/artworks/${art.id}`}
                       className="p-1.5 hover:text-charcoal rounded hover:bg-canvas-subtle touch-target flex items-center justify-center"
@@ -417,12 +463,20 @@ export default function StudioArtworksPage() {
                         />
                       </div>
                       <div className="min-w-0">
-                        <Link
-                          href={`/studio/artworks/${art.id}`}
-                          className="font-display text-sm font-semibold text-charcoal hover:underline truncate block"
-                        >
-                          {art.title}
-                        </Link>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <Link
+                            href={`/studio/artworks/${art.id}`}
+                            className="font-display text-sm font-semibold text-charcoal hover:underline truncate block"
+                          >
+                            {art.title}
+                          </Link>
+                          {art.isPieceOfTheMonth && (
+                            <span className="px-1.5 py-0.5 rounded text-[0.5625rem] font-mono uppercase bg-amber-500 text-stone-950 font-bold flex items-center gap-0.5 shadow-2xs">
+                              <Sparkles className="w-2.5 h-2.5" />
+                              <span>POTM</span>
+                            </span>
+                          )}
+                        </div>
                         <p className="text-[0.6875rem] text-charcoal-muted line-clamp-1">
                           {art.medium} ({art.year})
                         </p>
@@ -444,10 +498,34 @@ export default function StudioArtworksPage() {
                       : `$${art.price?.toLocaleString()} ${art.currency}`}
                   </td>
                   <td className="py-3 px-4">
-                    <StatusBadge status={art.status} size="sm" />
+                    <div className="flex items-center gap-1">
+                      <StatusBadge status={art.status} size="sm" />
+                      <button
+                        onClick={() => handleTogglePublish(art)}
+                        className={`text-[0.625rem] font-mono uppercase px-1.5 py-0.5 rounded border transition-colors ${
+                          art.publicationStatus === 'published'
+                            ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                            : 'bg-stone-100 text-stone-600 border-stone-200'
+                        }`}
+                        title="Click to toggle publish status"
+                      >
+                        {art.publicationStatus}
+                      </button>
+                    </div>
                   </td>
                   <td className="py-3 px-4 text-right">
                     <div className="flex items-center justify-end gap-1">
+                      <button
+                        onClick={() => handleTogglePieceOfTheMonth(art)}
+                        className={`p-1.5 rounded-lg border transition-colors ${
+                          art.isPieceOfTheMonth
+                            ? 'bg-amber-50 text-amber-600 border-amber-300'
+                            : 'border-canvas-border text-charcoal-muted hover:text-amber-600 hover:bg-canvas-subtle'
+                        }`}
+                        title={art.isPieceOfTheMonth ? 'Clear Piece of the Month' : 'Designate Piece of the Month'}
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                      </button>
                       <button
                         onClick={() => setPreviewArtwork(art)}
                         className="p-1.5 rounded-lg border border-canvas-border text-charcoal-muted hover:text-charcoal hover:bg-canvas-subtle transition-colors"

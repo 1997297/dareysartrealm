@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { ArtworkStatus } from '@/types/artwork';
 import { cn } from '@/lib/utils';
 
@@ -17,6 +17,11 @@ export function ArtworkStatusBadge({ status, className }: ArtworkStatusBadgeProp
     reserved: {
       label: 'RESERVED',
       dotClass: 'bg-amber-500',
+      badgeClass: 'text-charcoal-muted bg-canvas-paper/95 border-canvas-border',
+    },
+    collected: {
+      label: 'COLLECTED',
+      dotClass: 'bg-charcoal-subtle',
       badgeClass: 'text-charcoal-muted bg-canvas-paper/95 border-canvas-border',
     },
     sold: {

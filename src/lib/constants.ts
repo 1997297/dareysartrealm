@@ -7,9 +7,9 @@ export const SITE_TAGLINE = 'Original artworks, commissioned pieces and creative
 export const NAV_ITEMS: NavItem[] = [
   { label: 'Artworks', href: '/artworks' },
   { label: 'Collections', href: '/collections' },
-  { label: 'Commissions', href: '/commission' },
   { label: 'Services', href: '/services' },
   { label: 'About', href: '/about' },
+  { label: 'Contact', href: '/contact' },
 ];
 
 export const SOCIAL_LINKS: SocialLink[] = [

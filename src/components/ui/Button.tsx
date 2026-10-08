@@ -23,17 +23,17 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      'inline-flex items-center justify-center font-sans tracking-caps uppercase text-xs transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none group select-none';
+      'inline-flex items-center justify-center font-sans tracking-caps uppercase text-xs rounded-full transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none group select-none';
 
     const variantStyles = {
       primary:
-        'bg-charcoal text-canvas hover:bg-charcoal-light active:bg-black px-6 py-3.5 border border-charcoal rounded-lg',
+        'bg-charcoal text-canvas hover:bg-charcoal-light active:bg-black px-6 py-3.5 border border-charcoal rounded-full',
       secondary:
-        'bg-canvas-subtle text-charcoal hover:bg-canvas-muted active:bg-canvas-border px-6 py-3.5 border border-canvas-border rounded-lg',
+        'bg-canvas-subtle text-charcoal hover:bg-canvas-muted active:bg-canvas-border px-6 py-3.5 border border-canvas-border rounded-full',
       outline:
-        'bg-transparent text-charcoal border border-charcoal/30 hover:border-charcoal hover:bg-charcoal/5 px-6 py-3.5 rounded-lg',
+        'bg-transparent text-charcoal border border-charcoal/30 hover:border-charcoal hover:bg-charcoal/5 px-6 py-3.5 rounded-full',
       ghost:
-        'bg-transparent text-charcoal hover:text-charcoal-muted px-3 py-2 rounded-lg',
+        'bg-transparent text-charcoal hover:text-charcoal-muted px-4 py-2.5 rounded-full',
       editorial:
         'bg-transparent text-charcoal px-0 py-1 border-b border-charcoal/40 hover:border-charcoal hover:text-charcoal transition-colors font-medium',
     };

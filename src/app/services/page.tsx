@@ -1,21 +1,37 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, Sparkles, CheckCircle2, ShieldCheck, FileText, Palette, Paintbrush } from 'lucide-react';
 import { Container } from '@/components/layout/Container';
 import { Button } from '@/components/ui/Button';
 import { ServiceQuoteModal } from '@/components/services/ServiceQuoteModal';
+import { serviceService } from '@/services/serviceService';
 import { MOCK_SERVICES } from '@/data/mockServices';
 import { Service } from '@/types/service';
 
 export default function ServicesPage() {
+  const [services, setServices] = useState<Service[]>(MOCK_SERVICES);
   const [selectedServiceForQuote, setSelectedServiceForQuote] = useState<Service | null>(null);
   const [quoteModalOpen, setQuoteModalOpen] = useState(false);
 
+  useEffect(() => {
+    async function fetchServices() {
+      try {
+        const data = await serviceService.getAll();
+        if (data && data.length > 0) {
+          setServices(data);
+        }
+      } catch (err) {
+        console.error('Error fetching live services:', err);
+      }
+    }
+    fetchServices();
+  }, []);
+
   const handleOpenQuote = (service?: Service) => {
-    setSelectedServiceForQuote(service || MOCK_SERVICES[1]);
+    setSelectedServiceForQuote(service || services[0] || MOCK_SERVICES[1]);
     setQuoteModalOpen(true);
   };
 
@@ -39,12 +55,12 @@ export default function ServicesPage() {
               <Button
                 variant="primary"
                 size="md"
-                onClick={() => handleOpenQuote(MOCK_SERVICES[1])}
+                onClick={() => handleOpenQuote(services[1] || services[0])}
               >
-                Request a Project Consultation
+                Get a Quote
               </Button>
               <Button href="/artworks" variant="secondary" size="md">
-                Explore Available Artworks
+                View Artworks
               </Button>
             </div>
           </div>
@@ -57,12 +73,12 @@ export default function ServicesPage() {
               DISCIPLINES &amp; ENGAGEMENTS
             </span>
             <span className="text-xs text-charcoal-muted">
-              {MOCK_SERVICES.length} Practice Disciplines
+              {services.length} Practice Disciplines
             </span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {MOCK_SERVICES.map((service) => (
+            {services.map((service) => (
               <div
                 key={service.id}
                 className="group bg-canvas border border-canvas-border p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 hover:border-charcoal/40 hover:shadow-subtle rounded-2xl"
@@ -72,9 +88,6 @@ export default function ServicesPage() {
                   <div className="flex items-center justify-between border-b border-canvas-border pb-4 mb-6">
                     <span className="font-mono text-sm font-semibold text-charcoal">
                       {service.number}
-                    </span>
-                    <span className="gallery-plaque text-[0.625rem] text-charcoal-subtle">
-                      PRACTICE
                     </span>
                   </div>
 
@@ -120,14 +133,14 @@ export default function ServicesPage() {
                     href={`/services/${service.slug}`}
                     className="text-xs font-sans font-medium uppercase tracking-gallery text-charcoal hover:underline inline-flex items-center gap-1.5"
                   >
-                    <span>View Specifications</span>
+                    <span>View Details</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
 
                   <button
                     type="button"
                     onClick={() => handleOpenQuote(service)}
-                    className="text-xs font-medium px-3.5 py-1.5 bg-canvas-subtle hover:bg-charcoal hover:text-canvas text-charcoal border border-canvas-border transition-colors w-full sm:w-auto text-center rounded-lg"
+                    className="text-xs font-medium px-4 py-2 bg-canvas-subtle hover:bg-charcoal hover:text-canvas text-charcoal border border-canvas-border transition-colors w-full sm:w-auto text-center rounded-full"
                   >
                     Request Quote
                   </button>

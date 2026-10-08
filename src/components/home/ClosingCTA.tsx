@@ -29,10 +29,10 @@ export function ClosingCTA() {
 
           <div className="mt-8 sm:mt-12 flex flex-col xs:flex-row items-stretch xs:items-center justify-center gap-3 sm:gap-6">
             <Button href="/commission" variant="primary" size="lg" className="text-center justify-center">
-              Start yours
+              Create a Piece
             </Button>
             <Button href="/contact" variant="outline" size="lg" className="text-center justify-center">
-              Contact the studio
+              Contact Studio
             </Button>
           </div>
         </motion.div>

@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 export type StudioStatus =
   | 'available'
   | 'reserved'
+  | 'collected'
   | 'sold'
   | 'commissioned'
   | 'draft'
@@ -66,7 +67,13 @@ export function StatusBadge({ status, size = 'sm', className }: StatusBadgeProps
       dotColor = 'bg-amber-500';
       break;
 
+    case 'collected':
     case 'sold':
+      label = 'collected';
+      styleClasses = 'bg-stone-900 text-stone-100 border-stone-800';
+      dotColor = 'bg-stone-300';
+      break;
+
     case 'closed':
     case 'converted':
     case 'contracted':

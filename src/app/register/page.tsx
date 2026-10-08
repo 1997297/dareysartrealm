@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, ArrowRight, Loader2, AlertCircle, CheckCircle2, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { FormField } from '@/components/forms/FormField';
+import { BrandWordmark } from '@/components/ui/BrandWordmark';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function RegisterPage() {
@@ -72,7 +73,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-canvas text-charcoal grid grid-cols-1 lg:grid-cols-12">
       {/* LEFT: ART-DIRECTED VISUAL */}
-      <div className="hidden lg:block lg:col-span-6 relative bg-canvas-muted overflow-hidden">
+      <div className="hidden lg:flex lg:col-span-6 relative bg-canvas-muted overflow-hidden flex-col justify-center items-center p-10 xl:p-16 min-h-screen">
         <Image
           src="/artworks/pic4.jpeg"
           alt="Original Artwork by Darey"
@@ -80,15 +81,14 @@ export default function RegisterPage() {
           className="object-cover"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-charcoal/20 to-transparent" />
-        <div className="absolute bottom-12 left-12 right-12 text-canvas space-y-3">
-          <span className="gallery-plaque text-[0.625rem] text-canvas-muted block">
-            PRIVATE PATRONAGE
-          </span>
-          <h2 className="font-display text-3xl font-light leading-snug">
-            “Art is not decoration. It is an enduring emotional presence in your architecture.”
+        {/* Balanced readability overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/85 via-charcoal/50 to-charcoal/40" />
+        <div className="relative z-10 text-canvas space-y-6 max-w-lg my-auto text-left w-full px-4">
+          <BrandWordmark variant="light" size="md" subtitle="COLLECTOR NETWORK" interactive={false} />
+          <h2 className="font-display text-3xl xl:text-4xl font-light leading-snug drop-shadow-sm">
+            “Art is not decoration. It is an enduring emotional presence in your space.”
           </h2>
-          <p className="text-xs text-canvas-muted font-light">
+          <p className="text-xs text-canvas-muted font-light tracking-wide">
             Darey’s Artrealm Collector Network
           </p>
         </div>
@@ -125,9 +125,9 @@ export default function RegisterPage() {
           ) : (
             <>
               <div>
-                <span className="gallery-plaque text-[0.625rem] text-charcoal-subtle block mb-1">
-                  NEW COLLECTOR
-                </span>
+                <div className="mb-4">
+                  <BrandWordmark href="/" variant="dark" size="sm" subtitle="NEW COLLECTOR" />
+                </div>
                 <h1 className="font-display text-3xl sm:text-4xl text-charcoal font-medium">
                   Create Your Collector Account
                 </h1>

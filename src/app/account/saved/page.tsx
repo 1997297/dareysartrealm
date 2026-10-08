@@ -23,8 +23,18 @@ export default function AccountSavedPage() {
     async function loadSaved() {
       setIsLoading(true);
       const all = await artworkService.getAll();
+      const allSlugs = new Set(all.map((art) => art.slug));
       const matched = all.filter((art) => savedSlugs.includes(art.slug));
       setSavedArtworks(matched);
+
+      // Prune stale or deleted slugs if database returned published works
+      if (all.length > 0) {
+        const invalidSlugs = savedSlugs.filter((s) => !allSlugs.has(s));
+        if (invalidSlugs.length > 0) {
+          invalidSlugs.forEach((s) => unsaveArtwork(s));
+        }
+      }
+
       setIsLoading(false);
     }
 

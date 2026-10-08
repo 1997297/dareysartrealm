@@ -9,6 +9,7 @@ import { StudioMobileNav } from '@/components/studio/StudioMobileNav';
 import { StudioSearchModal } from '@/components/studio/StudioSearchModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
+import { BrandWordmark } from '@/components/ui/BrandWordmark';
 
 export function StudioClientShell({ children }: { children: React.ReactNode }) {
   const { user, isAdmin, isLoading } = useAuth();
@@ -44,11 +45,11 @@ export function StudioClientShell({ children }: { children: React.ReactNode }) {
             <Lock className="w-6 h-6 stroke-1" />
           </div>
 
-          <div className="space-y-2">
-            <span className="gallery-plaque text-[0.625rem] text-charcoal-subtle block">
-              STUDIO PORTAL &bull; RESTRICTED ACCESS
-            </span>
-            <h1 className="font-display text-3xl text-charcoal font-normal">
+          <div className="space-y-3">
+            <div className="flex justify-center">
+              <BrandWordmark variant="dark" size="md" subtitle="STUDIO WORKROOM" interactive={false} />
+            </div>
+            <h1 className="font-display text-2xl sm:text-3xl text-charcoal font-normal">
               Artist &amp; Atelier Workspace
             </h1>
             <p className="text-xs sm:text-sm text-charcoal-muted font-light leading-relaxed">

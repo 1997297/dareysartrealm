@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/Button';
 import { StepIndicator } from '@/components/forms/StepIndicator';
 import { FormField } from '@/components/forms/FormField';
 import { FileUploader } from '@/components/forms/FileUploader';
+import { LocationSelector } from '@/components/forms/LocationSelector';
 import { commissionService as directCommissionService } from '@/services/commissionService';
 import { MOCK_ARTWORKS } from '@/data/mockArtworks';
 import {
@@ -124,15 +125,54 @@ function CommissionFlow() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [country, setCountry] = useState('');
+  const [countryCode, setCountryCode] = useState('');
+  const [state, setState] = useState('');
+  const [stateCode, setStateCode] = useState('');
   const [city, setCity] = useState('');
   const [specialNotes, setSpecialNotes] = useState('');
+
+  const handleCountryChange = (selectedCountry: string, selectedCountryCode: string) => {
+    setCountry(selectedCountry);
+    setCountryCode(selectedCountryCode);
+    setState('');
+    setStateCode('');
+    setCity('');
+    setErrors((prev) => {
+      const copy = { ...prev };
+      delete copy.country;
+      delete copy.state;
+      delete copy.city;
+      return copy;
+    });
+  };
+
+  const handleStateChange = (selectedState: string, selectedStateCode: string) => {
+    setState(selectedState);
+    setStateCode(selectedStateCode);
+    setCity('');
+    setErrors((prev) => {
+      const copy = { ...prev };
+      delete copy.state;
+      delete copy.city;
+      return copy;
+    });
+  };
+
+  const handleCityChange = (selectedCity: string) => {
+    setCity(selectedCity);
+    setErrors((prev) => {
+      const copy = { ...prev };
+      delete copy.city;
+      return copy;
+    });
+  };
 
   // Validate step transitions
   const validateStep = (step: number): boolean => {
     const errs: { [key: string]: string } = {};
 
     if (step === 1) {
-      if (!artworkType) errs.artworkType = 'Please select a commission direction.';
+      if (!artworkType) errs.artworkType = 'Please select an artwork direction.';
       if (artworkType === 'other' && !customTypeDescription.trim()) {
         errs.customTypeDescription = 'Please describe your desired artwork medium.';
       }
@@ -148,17 +188,18 @@ function CommissionFlow() {
       }
     } else if (step === 3) {
       if (!narrative.trim() || narrative.trim().length < 15) {
-        errs.narrative = 'Please provide at least a brief concept or story description (min 15 characters).';
+        errs.narrative = 'Please share a brief concept or story (at least 15 characters).';
       }
     } else if (step === 4) {
-      if (!budgetRange) errs.budgetRange = 'Please select a budget investment bracket.';
+      if (!budgetRange) errs.budgetRange = 'Please select a budget range.';
       if (targetTimeline === 'specific-date' && !targetDate.trim()) {
-        errs.targetDate = 'Please select your target milestone date.';
+        errs.targetDate = 'Please select your target date.';
       }
     } else if (step === 5) {
       if (!fullName.trim()) errs.fullName = 'Please provide your full name.';
       if (!email.trim() || !email.includes('@')) errs.email = 'Please provide a valid email address.';
-      if (!country.trim()) errs.country = 'Please provide your country/location for fine-art crating.';
+      if (!country.trim()) errs.country = 'Please select your country.';
+      if (!city.trim()) errs.city = 'Please enter or select your city.';
     }
 
     setErrors(errs);
@@ -206,6 +247,9 @@ function CommissionFlow() {
         email,
         phone,
         country,
+        countryCode,
+        state,
+        stateCode,
         city,
         specialNotes,
       };
@@ -214,7 +258,7 @@ function CommissionFlow() {
       setSubmissionSuccess(result);
       window.scrollTo({ top: 100, behavior: 'smooth' });
     } catch (err) {
-      setErrors({ form: 'An error occurred while transmitting your commission request. Please try again.' });
+      setErrors({ form: 'An error occurred while sending your request. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -230,20 +274,20 @@ function CommissionFlow() {
             className="inline-flex items-center gap-2 text-xs font-medium text-charcoal-muted hover:text-charcoal transition-colors tracking-wide"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Return to Artwork Catalogue</span>
+            <span>View Artworks</span>
           </Link>
         </div>
 
         {/* Page Header */}
         <div className="border-b border-canvas-border pb-8 mb-10">
           <span className="gallery-plaque text-[0.625rem] text-charcoal-subtle block mb-2">
-            BESPOKE ATELIER CREATION
+            ORIGINAL ARTWORK CREATION
           </span>
           <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-charcoal font-normal tracking-tight">
-            Commission a Piece
+            Create a Piece
           </h1>
           <p className="mt-4 text-sm sm:text-base text-charcoal-muted font-light leading-relaxed max-w-2xl">
-            Collaborate directly with Darey to originate a one-of-a-kind fine art creation tailored to your space, aesthetic rhythm, and personal narrative.
+            Work directly with Darey to create an original artwork tailored to your space and personal story.
           </p>
 
           {/* Inspired-by Context Banner if linked from artwork */}
@@ -326,7 +370,7 @@ function CommissionFlow() {
                 View in Collector Portal
               </Button>
               <Button href="/artworks" variant="secondary" size="md">
-                Continue Exploring Catalogue
+                View Artworks
               </Button>
             </div>
           </div>
@@ -751,37 +795,30 @@ function CommissionFlow() {
                       </FormField>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                      <FormField label="Phone / WhatsApp" hint="Optional">
-                        <input
-                          type="tel"
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
-                          placeholder="+1 / +44 / +234..."
-                          className="w-full px-4 py-3 bg-canvas border border-canvas-border focus:border-charcoal focus:outline-none text-sm text-charcoal"
-                        />
-                      </FormField>
+                    <FormField label="Phone / WhatsApp" hint="Optional">
+                      <input
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="+1 / +44 / +234..."
+                        className="w-full px-4 py-3 bg-canvas border border-canvas-border focus:border-charcoal focus:outline-none text-sm text-charcoal"
+                      />
+                    </FormField>
 
-                      <FormField label="Country / Territory" required error={errors.country}>
-                        <input
-                          type="text"
-                          value={country}
-                          onChange={(e) => setCountry(e.target.value)}
-                          placeholder="e.g. United Kingdom"
-                          className="w-full px-4 py-3 bg-canvas border border-canvas-border focus:border-charcoal focus:outline-none text-sm text-charcoal"
-                        />
-                      </FormField>
-
-                      <FormField label="City / Region" hint="Optional">
-                        <input
-                          type="text"
-                          value={city}
-                          onChange={(e) => setCity(e.target.value)}
-                          placeholder="e.g. London"
-                          className="w-full px-4 py-3 bg-canvas border border-canvas-border focus:border-charcoal focus:outline-none text-sm text-charcoal"
-                        />
-                      </FormField>
-                    </div>
+                    {/* Integrated Country, State & City Selector */}
+                    <LocationSelector
+                      country={country}
+                      countryCode={countryCode}
+                      state={state}
+                      stateCode={stateCode}
+                      city={city}
+                      onCountryChange={handleCountryChange}
+                      onStateChange={handleStateChange}
+                      onCityChange={handleCityChange}
+                      countryError={errors.country}
+                      stateError={errors.state}
+                      cityError={errors.city}
+                    />
 
                     <FormField label="Additional Notes or Delivery Considerations" hint="Optional">
                       <textarea
@@ -810,10 +847,10 @@ function CommissionFlow() {
                     type="button"
                     onClick={handleBack}
                     disabled={isSubmitting}
-                    className="inline-flex items-center gap-2 text-xs font-medium text-charcoal-muted hover:text-charcoal transition-colors px-4 py-2.5 border border-canvas-border"
+                    className="inline-flex items-center gap-2 text-xs font-medium text-charcoal-muted hover:text-charcoal transition-colors px-5 py-2.5 border border-canvas-border rounded-full"
                   >
                     <ArrowLeft className="w-3.5 h-3.5" />
-                    <span>Previous Step</span>
+                    <span>Go Back</span>
                   </button>
                 ) : (
                   <div />
@@ -823,25 +860,25 @@ function CommissionFlow() {
                   <button
                     type="button"
                     onClick={handleNext}
-                    className="inline-flex items-center gap-2 text-xs font-medium bg-charcoal text-canvas hover:bg-charcoal-muted transition-colors px-6 py-3"
+                    className="inline-flex items-center gap-2 text-xs font-medium bg-charcoal text-canvas hover:bg-charcoal-muted transition-colors px-6 py-3 rounded-full"
                   >
-                    <span>Continue to Step 0{currentStep + 1}</span>
+                    <span>Continue</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 ) : (
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="inline-flex items-center gap-2 text-xs font-medium bg-charcoal text-canvas hover:bg-charcoal-muted transition-colors px-8 py-3.5 disabled:opacity-50"
+                    className="inline-flex items-center gap-2 text-xs font-medium bg-charcoal text-canvas hover:bg-charcoal-muted transition-colors px-8 py-3.5 rounded-full disabled:opacity-50"
                   >
                     {isSubmitting ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Transmitting Commission Brief...</span>
+                        <span>Sending Request...</span>
                       </>
                     ) : (
                       <>
-                        <span>Submit Commission Request</span>
+                        <span>Send Request</span>
                         <ArrowRight className="w-4 h-4" />
                       </>
                     )}

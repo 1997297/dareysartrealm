@@ -1,12 +1,16 @@
 import { MOCK_COLLECTIONS } from '@/data/mockCollections';
+import { INITIAL_COLLECTIONS, INITIAL_FEATURED_COLLECTION } from '@/data/initialContent';
 import { Collection } from '@/types/collection';
 import { Artwork } from '@/types/artwork';
 import { safeLocalStorage, STORAGE_KEYS } from '@/lib/storage';
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client';
 import { CollectionRow } from '@/types/supabase';
-import { artworkService } from './artworkService';
+import { artworkService, isDevMockEnabled } from './artworkService';
 
 function getStoredCollections(): Collection[] {
+  if (!isDevMockEnabled()) {
+    return [];
+  }
   const stored = safeLocalStorage.getItem<Collection[] | null>(STORAGE_KEYS.STUDIO_COLLECTIONS, null);
   if (!stored) {
     safeLocalStorage.setItem(STORAGE_KEYS.STUDIO_COLLECTIONS, MOCK_COLLECTIONS);
@@ -16,7 +20,9 @@ function getStoredCollections(): Collection[] {
 }
 
 function setStoredCollections(collections: Collection[]): void {
-  safeLocalStorage.setItem(STORAGE_KEYS.STUDIO_COLLECTIONS, collections);
+  if (isDevMockEnabled()) {
+    safeLocalStorage.setItem(STORAGE_KEYS.STUDIO_COLLECTIONS, collections);
+  }
 }
 
 function mapRowToCollection(row: CollectionRow, count: number = 0): Collection {
@@ -46,17 +52,25 @@ function mapRowToCollection(row: CollectionRow, count: number = 0): Collection {
 
 export const collectionService = {
   /**
-   * Retrieves all collections. If Supabase is connected, queries production database.
+   * Retrieves all collections.
+   * In production, queries Supabase strictly. If unconfigured or failed, fails safely and returns [].
+   * In development, mock fallback is only available if NEXT_PUBLIC_ENABLE_DEV_MOCK_DATA === 'true'.
    */
-  async getAll(): Promise<Collection[]> {
+  async getAll(options?: { includeUnpublished?: boolean }): Promise<Collection[]> {
     if (isSupabaseConfigured()) {
       try {
         const supabase = createClient();
-        const { data: cols, error: colError } = await supabase
+        let query = supabase
           .from('collections')
           .select('*')
           .order('sort_order', { ascending: true })
           .order('created_at', { ascending: false });
+
+        if (!options?.includeUnpublished) {
+          query = query.eq('publication_status', 'published');
+        }
+
+        const { data: cols, error: colError } = await query;
 
         if (!colError && cols) {
           // Fetch counts from artwork_collections
@@ -73,15 +87,30 @@ export const collectionService = {
 
           return cols.map((c) => mapRowToCollection(c, countMap[c.id] || 0));
         }
+
+        if (colError) {
+          console.error('[Production Data Error] Supabase collections query failed:', colError.message);
+        }
       } catch (err) {
-        console.warn('Supabase collections query failed, using fallback:', err);
+        console.error('[Production Data Error] Supabase collections threw exception:', err);
+      }
+    } else {
+      if (!isDevMockEnabled()) {
+        console.error(
+          '[Production Configuration Error] Supabase is not configured. Collection mock fallback is strictly disabled in production.'
+        );
       }
     }
-    return getStoredCollections();
+
+    if (isDevMockEnabled()) {
+      return getStoredCollections();
+    }
+    return INITIAL_COLLECTIONS;
   },
 
   /**
-   * Retrieves the primary featured collection for homepage exhibition
+   * Retrieves the primary featured collection for homepage exhibition.
+   * Completely data-driven: Priority 1: featured=true, Priority 2: first published, Priority 3: null.
    */
   async getFeaturedCollection(): Promise<Collection | null> {
     if (isSupabaseConfigured()) {
@@ -92,6 +121,7 @@ export const collectionService = {
           .select('*')
           .eq('featured', true)
           .eq('publication_status', 'published')
+          .order('sort_order', { ascending: true })
           .limit(1)
           .maybeSingle();
 
@@ -100,7 +130,7 @@ export const collectionService = {
         }
 
         // If no collection is marked featured, get the first published collection
-        const { data: firstPub } = await supabase
+        const { data: firstPub, error: firstError } = await supabase
           .from('collections')
           .select('*')
           .eq('publication_status', 'published')
@@ -108,31 +138,39 @@ export const collectionService = {
           .limit(1)
           .maybeSingle();
 
-        if (firstPub) {
+        if (!firstError && firstPub) {
           return mapRowToCollection(firstPub);
         }
-        return null;
       } catch (err) {
-        console.warn('Supabase featured collection query failed, using fallback:', err);
+        console.error('[Production Data Error] Supabase featured collection query failed:', err);
       }
     }
-    const collections = getStoredCollections();
-    const featured = collections.find((col) => col.featured) || collections[0] || null;
-    return featured;
+
+    if (isDevMockEnabled()) {
+      const collections = getStoredCollections();
+      const featured = collections.find((col) => col.featured && col.visibility === 'published') || collections[0] || null;
+      return featured;
+    }
+    return INITIAL_FEATURED_COLLECTION;
   },
 
   /**
    * Retrieves a collection by its unique slug
    */
-  async getBySlug(slug: string): Promise<Collection | null> {
+  async getBySlug(slug: string, options?: { allowDraft?: boolean }): Promise<Collection | null> {
     if (isSupabaseConfigured()) {
       try {
         const supabase = createClient();
-        const { data, error } = await supabase
+        let query = supabase
           .from('collections')
           .select('*')
-          .eq('slug', slug)
-          .maybeSingle();
+          .eq('slug', slug);
+
+        if (!options?.allowDraft) {
+          query = query.eq('publication_status', 'published');
+        }
+
+        const { data, error } = await query.maybeSingle();
 
         if (!error && data) {
           const { count } = await supabase
@@ -142,14 +180,23 @@ export const collectionService = {
 
           return mapRowToCollection(data, count || 0);
         }
-        return null;
+        if (error) {
+          console.error(`[Production Data Error] getBySlug('${slug}') failed:`, error.message);
+        }
       } catch (err) {
-        console.warn('Supabase getBySlug failed, using fallback:', err);
+        console.error(`[Production Data Error] getBySlug('${slug}') threw exception:`, err);
       }
     }
-    const collections = getStoredCollections();
-    const collection = collections.find((col) => col.slug === slug);
-    return collection || null;
+
+    if (isDevMockEnabled()) {
+      const collections = getStoredCollections();
+      const collection = collections.find((col) => col.slug === slug);
+      if (collection && (!options?.allowDraft && collection.visibility !== 'published')) {
+        return null;
+      }
+      return collection || null;
+    }
+    return INITIAL_COLLECTIONS.find((col) => col.slug === slug) || null;
   },
 
   /**
@@ -170,16 +217,21 @@ export const collectionService = {
         }
         return null;
       } catch (err) {
-        console.warn('Supabase getById failed, using fallback:', err);
+        console.error(`[Production Data Error] getById('${id}') failed:`, err);
+        return null;
       }
     }
-    const collections = getStoredCollections();
-    const collection = collections.find((col) => col.id === id);
-    return collection || null;
+
+    if (isDevMockEnabled()) {
+      const collections = getStoredCollections();
+      const collection = collections.find((col) => col.id === id);
+      return collection || null;
+    }
+    return null;
   },
 
   /**
-   * Retrieves all artworks belonging to a collection
+   * Retrieves all published artworks belonging to a collection
    */
   async getArtworks(collectionSlug: string): Promise<Artwork[]> {
     if (isSupabaseConfigured()) {
@@ -200,49 +252,55 @@ export const collectionService = {
           return allWorks.filter((w) => artworkIds.includes(w.id));
         }
       } catch (err) {
-        console.warn('Supabase collection artworks query failed, using fallback:', err);
+        console.error('[Production Data Error] Supabase collection artworks query failed:', err);
       }
     }
+
     const allArtworks = await artworkService.getAll();
-    const artworks = allArtworks.filter((art) => art.collection?.slug === collectionSlug);
-    return artworks;
+    return allArtworks.filter((art) => art.collection?.slug === collectionSlug);
   },
 
   /**
-   * Creates a new collection in the database
+   * Creates a new collection in the database.
+   * Throws descriptive errors if unique constraints fail.
    */
   async create(data: Omit<Collection, 'id' | 'createdAt' | 'updatedAt'>): Promise<Collection> {
     if (isSupabaseConfigured()) {
-      try {
-        const supabase = createClient();
-        const { data: inserted, error } = await supabase
-          .from('collections')
-          .insert({
-            slug: data.slug,
-            title: data.title,
-            subtitle: data.subtitle || null,
-            statement: data.statement,
-            description: data.description,
-            year: data.year ?? null,
-            cover_image_url: data.coverImage?.url || null,
-            cover_image_alt: data.coverImage?.alt || data.title,
-            accent_color: data.accentColor || null,
-            featured: data.featured || false,
-            publication_status: data.visibility || 'draft',
-            sort_order: data.displayOrder || 0,
-          })
-          .select()
-          .single();
+      const supabase = createClient();
+      const { data: inserted, error } = await supabase
+        .from('collections')
+        .insert({
+          slug: data.slug,
+          title: data.title,
+          subtitle: data.subtitle || null,
+          statement: data.statement,
+          description: data.description,
+          year: data.year ?? null,
+          cover_image_url: data.coverImage?.url || null,
+          cover_image_alt: data.coverImage?.alt || data.title,
+          accent_color: data.accentColor || null,
+          featured: data.featured || false,
+          publication_status: data.visibility || 'draft',
+          sort_order: data.displayOrder || 0,
+        })
+        .select()
+        .single();
 
-        if (!error && inserted) {
-          return mapRowToCollection(inserted);
+      if (error) {
+        if (error.code === '23505' && (error.message.includes('slug') || error.message.includes('collections_slug_key'))) {
+          throw new Error(`A collection with URL slug "${data.slug}" already exists. Please choose a different title or slug.`);
         }
-        if (error) {
-          throw new Error(`Collection creation failed: ${error.message}`);
-        }
-      } catch (err) {
-        console.warn('Supabase collection creation failed, falling back:', err);
+        throw new Error(`Collection creation failed: ${error.message}`);
       }
+
+      if (inserted) {
+        return mapRowToCollection(inserted);
+      }
+      throw new Error('Collection creation failed: no record returned.');
+    }
+
+    if (!isDevMockEnabled()) {
+      throw new Error('Supabase is not configured. Database operations are unavailable in production.');
     }
 
     const collections = getStoredCollections();
@@ -263,37 +321,45 @@ export const collectionService = {
    */
   async update(id: string, updates: Partial<Collection>): Promise<Collection | null> {
     if (isSupabaseConfigured()) {
-      try {
-        const supabase = createClient();
-        const payload: Record<string, unknown> = {};
-        if (updates.title !== undefined) payload.title = updates.title;
-        if (updates.subtitle !== undefined) payload.subtitle = updates.subtitle;
-        if (updates.slug !== undefined) payload.slug = updates.slug;
-        if (updates.statement !== undefined) payload.statement = updates.statement;
-        if (updates.description !== undefined) payload.description = updates.description;
-        if (updates.year !== undefined) payload.year = updates.year;
-        if (updates.featured !== undefined) payload.featured = updates.featured;
-        if (updates.visibility !== undefined) payload.publication_status = updates.visibility;
-        if (updates.displayOrder !== undefined) payload.sort_order = updates.displayOrder;
-        if (updates.coverImage?.url !== undefined) {
-          payload.cover_image_url = updates.coverImage.url;
-          payload.cover_image_alt = updates.coverImage.alt || updates.title || '';
-        }
-        if (updates.accentColor !== undefined) payload.accent_color = updates.accentColor;
-
-        const { data, error } = await supabase
-          .from('collections')
-          .update(payload)
-          .eq('id', id)
-          .select()
-          .single();
-
-        if (!error && data) {
-          return mapRowToCollection(data);
-        }
-      } catch (err) {
-        console.warn('Supabase collection update failed, falling back:', err);
+      const supabase = createClient();
+      const payload: Record<string, unknown> = {};
+      if (updates.title !== undefined) payload.title = updates.title;
+      if (updates.subtitle !== undefined) payload.subtitle = updates.subtitle;
+      if (updates.slug !== undefined) payload.slug = updates.slug;
+      if (updates.statement !== undefined) payload.statement = updates.statement;
+      if (updates.description !== undefined) payload.description = updates.description;
+      if (updates.year !== undefined) payload.year = updates.year;
+      if (updates.featured !== undefined) payload.featured = updates.featured;
+      if (updates.visibility !== undefined) payload.publication_status = updates.visibility;
+      if (updates.displayOrder !== undefined) payload.sort_order = updates.displayOrder;
+      if (updates.coverImage?.url !== undefined) {
+        payload.cover_image_url = updates.coverImage.url;
+        payload.cover_image_alt = updates.coverImage.alt || updates.title || '';
       }
+      if (updates.accentColor !== undefined) payload.accent_color = updates.accentColor;
+
+      const { data, error } = await supabase
+        .from('collections')
+        .update(payload)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        if (error.code === '23505' && (error.message.includes('slug') || error.message.includes('collections_slug_key'))) {
+          throw new Error(`A collection with URL slug "${updates.slug}" already exists. Please choose a different title or slug.`);
+        }
+        throw new Error(`Collection update failed: ${error.message}`);
+      }
+
+      if (data) {
+        return mapRowToCollection(data);
+      }
+      return null;
+    }
+
+    if (!isDevMockEnabled()) {
+      throw new Error('Supabase is not configured. Database operations are unavailable in production.');
     }
 
     const collections = getStoredCollections();
@@ -316,17 +382,20 @@ export const collectionService = {
    */
   async delete(id: string): Promise<boolean> {
     if (isSupabaseConfigured()) {
-      try {
-        const supabase = createClient();
-        const { error } = await supabase
-          .from('collections')
-          .delete()
-          .eq('id', id);
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('collections')
+        .delete()
+        .eq('id', id);
 
-        return !error;
-      } catch (err) {
-        console.warn('Supabase collection delete failed, falling back:', err);
+      if (error) {
+        throw new Error(`Collection deletion failed: ${error.message}`);
       }
+      return true;
+    }
+
+    if (!isDevMockEnabled()) {
+      throw new Error('Supabase is not configured. Database operations are unavailable in production.');
     }
 
     const collections = getStoredCollections();
@@ -353,4 +422,3 @@ export const collectionService = {
     );
   },
 };
-

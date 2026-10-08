@@ -26,7 +26,7 @@ export function ArtistIntroduction() {
               <div className="relative aspect-[4/5] w-full overflow-hidden bg-canvas-muted shadow-gallery border border-canvas-border rounded-2xl">
                 <Image
                   src="/artworks/pic3.jpeg"
-                  alt="Darey artwork — mixed media canvas"
+                  alt="Darey artwork, mixed media canvas"
                   fill
                   sizes="(max-width: 1024px) 100vw, 40vw"
                   className="object-cover"

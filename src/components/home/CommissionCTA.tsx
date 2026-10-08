@@ -60,7 +60,7 @@ export function CommissionCTA() {
                 size="lg"
                 className="bg-canvas text-charcoal hover:bg-canvas-subtle border-none text-center justify-center"
               >
-                Commission an artwork
+                Create a Piece
               </Button>
               <Button
                 href="/contact"
@@ -68,7 +68,7 @@ export function CommissionCTA() {
                 size="lg"
                 className="text-canvas border-canvas/40 hover:border-canvas hover:bg-canvas/10 text-center justify-center"
               >
-                Schedule a consultation
+                Contact Studio
               </Button>
             </motion.div>
 

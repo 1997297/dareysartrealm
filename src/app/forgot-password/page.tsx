@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Check, Loader2, AlertCircle, ShieldAlert } from 'lucide-react';
 import { Container } from '@/components/layout/Container';
 import { Button } from '@/components/ui/Button';
+import { BrandWordmark } from '@/components/ui/BrandWordmark';
 import { FormField } from '@/components/forms/FormField';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -35,13 +36,16 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen bg-canvas text-charcoal pt-32 pb-20 flex items-center justify-center">
       <Container size="editorial">
         <div className="max-w-md mx-auto p-8 sm:p-10 border border-canvas-border rounded-2xl bg-canvas shadow-subtle space-y-6">
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-1.5 text-xs text-charcoal-muted hover:text-charcoal transition-colors mb-2"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Back to Sign In</span>
-          </Link>
+          <div className="flex items-center justify-between pb-2 border-b border-canvas-border/60">
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-1.5 text-xs text-charcoal-muted hover:text-charcoal transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Sign In</span>
+            </Link>
+            <BrandWordmark href="/" variant="dark" size="sm" interactive={false} />
+          </div>
 
           {!isConfigured && (
             <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs space-y-1 text-amber-900">

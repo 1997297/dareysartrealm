@@ -9,6 +9,7 @@ import { NavLink } from './NavLink';
 import { MobileMenu } from './MobileMenu';
 import { Button } from '@/components/ui/Button';
 import { Logo } from '@/components/ui/Logo';
+import { BrandWordmark } from '@/components/ui/BrandWordmark';
 import { useAuth } from '@/contexts/AuthContext';
 import { SearchOverlay } from '@/components/search/SearchOverlay';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
@@ -20,6 +21,8 @@ export function Header() {
   const { isScrolled } = useScrollPosition();
   const { isAuthenticated } = useAuth();
   const pathname = usePathname();
+
+  const isAuthPage = pathname === '/login' || pathname === '/register';
 
   // Dark header when on homepage over the dark painting hero section
   const isDarkHeader = pathname === '/' && !isScrolled;
@@ -55,7 +58,9 @@ export function Header() {
       <header
         className={cn(
           'fixed top-0 left-0 right-0 z-40 w-full transition-all duration-500 ease-artistic',
-          isScrolled
+          isAuthPage
+            ? 'bg-canvas border-b border-canvas-border shadow-xs py-3 sm:py-3.5'
+            : isScrolled
             ? 'bg-canvas/90 backdrop-blur-md py-2.5 sm:py-3 border-b border-canvas-border/80 shadow-subtle'
             : 'bg-transparent py-3.5 sm:py-4 md:py-4.5'
         )}
@@ -79,26 +84,11 @@ export function Header() {
                 className="transition-transform duration-300 group-hover:scale-105"
               />
             </div>
-            <div className="flex flex-col">
-              <span
-                className={cn(
-                  'font-display text-sm sm:text-base font-semibold tracking-[0.16em] transition-colors leading-tight',
-                  isDarkHeader
-                    ? 'text-canvas group-hover:text-canvas/80'
-                    : 'text-charcoal group-hover:text-charcoal-muted'
-                )}
-              >
-                {SITE_NAME}
-              </span>
-              <span
-                className={cn(
-                  'gallery-plaque text-[0.55rem] tracking-[0.24em] transition-colors',
-                  isDarkHeader ? 'text-canvas/60' : 'text-charcoal-subtle'
-                )}
-              >
-                ART STUDIO
-              </span>
-            </div>
+            <BrandWordmark
+              variant={isDarkHeader ? 'light' : 'dark'}
+              size="sm"
+              interactive={false}
+            />
           </Link>
 
           {/* Desktop Navigation Links */}
@@ -141,7 +131,7 @@ export function Header() {
                 variant={isDarkHeader ? 'secondary' : 'primary'}
                 size="sm"
                 className={cn(
-                  'rounded-lg tracking-wider text-xs uppercase px-4 sm:px-5 py-2 font-medium',
+                  'rounded-full tracking-wider text-xs uppercase px-4 sm:px-5 py-2 font-medium',
                   isDarkHeader && 'bg-canvas text-charcoal hover:bg-canvas-subtle border-none'
                 )}
               >

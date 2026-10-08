@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Eye, EyeOff, Lock, ArrowRight, Loader2, AlertCircle, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { FormField } from '@/components/forms/FormField';
+import { BrandWordmark } from '@/components/ui/BrandWordmark';
 import { useAuth } from '@/contexts/AuthContext';
 import { sanitizeRedirectPath } from '@/lib/supabase/middleware';
 
@@ -63,9 +64,9 @@ function LoginForm() {
   return (
     <div className="w-full max-w-md space-y-8">
       <div>
-        <span className="gallery-plaque text-[0.625rem] text-charcoal-subtle block mb-1">
-          PRIVATE ACCESS
-        </span>
+        <div className="mb-4">
+          <BrandWordmark href="/" variant="dark" size="sm" subtitle="COLLECTOR ACCESS" />
+        </div>
         <h1 className="font-display text-3xl sm:text-4xl text-charcoal font-medium">
           Sign In to Your Collection
         </h1>
@@ -174,7 +175,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-canvas text-charcoal grid grid-cols-1 lg:grid-cols-12">
       {/* LEFT: ART-DIRECTED VISUAL */}
-      <div className="hidden lg:block lg:col-span-6 relative bg-canvas-muted overflow-hidden">
+      <div className="hidden lg:flex lg:col-span-6 relative bg-canvas-muted overflow-hidden flex-col justify-center items-center p-10 xl:p-16 min-h-screen">
         <Image
           src="/artworks/hero.jpeg"
           alt="Darey Studio Monumental Canvas"
@@ -182,15 +183,14 @@ export default function LoginPage() {
           className="object-cover"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-charcoal/20 to-transparent" />
-        <div className="absolute bottom-12 left-12 right-12 text-canvas space-y-3">
-          <span className="gallery-plaque text-[0.625rem] text-canvas-muted block">
-            THE COLLECTOR SANCTUARY
-          </span>
-          <h2 className="font-display text-3xl font-light leading-snug">
+        {/* Balanced readability overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/85 via-charcoal/50 to-charcoal/40" />
+        <div className="relative z-10 text-canvas space-y-6 max-w-lg my-auto text-left w-full px-4">
+          <BrandWordmark variant="light" size="md" subtitle="COLLECTOR ACCESS" interactive={false} />
+          <h2 className="font-display text-3xl xl:text-4xl font-light leading-snug drop-shadow-sm">
             “To acquire art is to welcome an enduring soul into your sanctuary.”
           </h2>
-          <p className="text-xs text-canvas-muted font-light">
+          <p className="text-xs text-canvas-muted font-light tracking-wide">
             Darey’s Artrealm Collector Experience
           </p>
         </div>

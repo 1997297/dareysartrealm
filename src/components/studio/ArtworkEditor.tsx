@@ -17,6 +17,8 @@ import {
   Image as ImageIcon,
   ExternalLink,
   Loader2,
+  ChevronUp,
+  ChevronDown,
 } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
 import { ConfirmationModal } from './ConfirmationModal';
@@ -54,22 +56,25 @@ export function ArtworkEditor({ initialArtwork, isNew = false }: ArtworkEditorPr
   const [availabilityNote, setAvailabilityNote] = useState(initialArtwork?.availabilityNote || '');
 
   // Physical
-  const [medium, setMedium] = useState(initialArtwork?.medium || 'Acrylic and raw earth pigments on heavy linen');
-  const [width, setWidth] = useState<number>(initialArtwork?.width || 120);
-  const [height, setHeight] = useState<number>(initialArtwork?.height || 100);
-  const [depth, setDepth] = useState<number | undefined>(initialArtwork?.depth || 4.5);
+  const [medium, setMedium] = useState(initialArtwork?.medium || '');
+  const [width, setWidth] = useState<number | undefined>(initialArtwork?.width);
+  const [height, setHeight] = useState<number | undefined>(initialArtwork?.height);
+  const [depth, setDepth] = useState<number | undefined>(initialArtwork?.depth);
   const [orientation, setOrientation] = useState<ArtworkOrientation>(initialArtwork?.orientation || 'portrait');
 
   // Commerce
-  const [status, setStatus] = useState<ArtworkStatus>(initialArtwork?.status || 'available');
-  const [price, setPrice] = useState<number | undefined>(initialArtwork?.price || 3500);
+  const [status, setStatus] = useState<ArtworkStatus>(
+    initialArtwork?.status === 'sold' ? 'collected' : (initialArtwork?.status || 'available')
+  );
+  const [price, setPrice] = useState<number | undefined>(initialArtwork?.price);
   const [currency, setCurrency] = useState(initialArtwork?.currency || 'USD');
   const [isPriceOnRequest, setIsPriceOnRequest] = useState<boolean>(initialArtwork?.isPriceOnRequest || false);
 
   // Organisation
   const [collectionSlug, setCollectionSlug] = useState<string>(initialArtwork?.collection?.slug || '');
-  const [tagsInput, setTagsInput] = useState<string>(initialArtwork?.tags?.join(', ') || 'Original Painting, Impasto, Fine Art');
+  const [tagsInput, setTagsInput] = useState<string>(initialArtwork?.tags?.join(', ') || '');
   const [featured, setFeatured] = useState<boolean>(initialArtwork?.featured || false);
+  const [isPieceOfTheMonth, setIsPieceOfTheMonth] = useState<boolean>(initialArtwork?.isPieceOfTheMonth || false);
   const [displayOrder, setDisplayOrder] = useState<number>(initialArtwork?.displayOrder || 1);
 
   // Publishing
@@ -82,23 +87,21 @@ export function ArtworkEditor({ initialArtwork, isNew = false }: ArtworkEditorPr
   const [metaDescription, setMetaDescription] = useState(initialArtwork?.metaDescription || '');
 
   // Media List
-  const defaultInitialImage: ArtworkImage = initialArtwork?.coverImage || {
-    id: 'img-1',
-    url: '/artworks/pic1.jpeg',
-    alt: 'Original painting detail by Darey',
-    width: 1080,
-    height: 770,
-    type: 'primary',
-    isCover: true,
-  };
   const [images, setImages] = useState<ArtworkImage[]>(
-    initialArtwork?.images?.length ? initialArtwork.images : [defaultInitialImage]
+    initialArtwork?.images?.length
+      ? initialArtwork.images
+      : initialArtwork?.coverImage
+      ? [initialArtwork.coverImage]
+      : []
   );
 
   // UI state
   const [isDirty, setIsDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [customUrlInput, setCustomUrlInput] = useState('');
+  const [customUrlType, setCustomUrlType] = useState<ArtworkImageType>('detail');
+  const [showAddUrl, setShowAddUrl] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [archiveModalOpen, setArchiveModalOpen] = useState(false);
@@ -132,7 +135,15 @@ export function ArtworkEditor({ initialArtwork, isNew = false }: ArtworkEditorPr
   }
 
   // Cover image helper
-  const coverImage = images.find((img) => img.isCover) || images[0] || defaultInitialImage;
+  const coverImage: ArtworkImage = images.find((img) => img.isCover) || images[0] || {
+    id: 'img-empty',
+    url: '',
+    alt: title || 'Artwork image',
+    width: 1200,
+    height: 900,
+    type: 'primary',
+    isCover: true,
+  };
 
   function setCover(imageId: string) {
     setImages((prev) =>
@@ -153,13 +164,9 @@ export function ArtworkEditor({ initialArtwork, isNew = false }: ArtworkEditorPr
   }
 
   function removeImage(imageId: string) {
-    if (images.length <= 1) {
-      alert('Artwork must have at least one image.');
-      return;
-    }
     setImages((prev) => {
       const next = prev.filter((img) => img.id !== imageId);
-      if (!next.some((i) => i.isCover)) {
+      if (next.length > 0 && !next.some((i) => i.isCover)) {
         next[0].isCover = true;
       }
       return next;
@@ -167,31 +174,66 @@ export function ArtworkEditor({ initialArtwork, isNew = false }: ArtworkEditorPr
     markDirty();
   }
 
+  function moveImage(index: number, direction: 'up' | 'down') {
+    if (direction === 'up' && index === 0) return;
+    if (direction === 'down' && index === images.length - 1) return;
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    setImages((prev) => {
+      const next = [...prev];
+      const temp = next[index];
+      next[index] = next[targetIndex];
+      next[targetIndex] = temp;
+      return next;
+    });
+    markDirty();
+  }
+
+  function handleAddCustomImageUrl(url: string, type: ArtworkImageType = 'detail') {
+    if (!url.trim()) return;
+    const newImg: ArtworkImage = {
+      id: `img-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      url: url.trim(),
+      alt: `${title || 'Artwork'} perspective view`,
+      width: 1200,
+      height: 900,
+      type,
+      isCover: images.length === 0,
+    };
+    setImages((prev) => [...prev, newImg]);
+    markDirty();
+    setFeedback('Image perspective added to artwork gallery.');
+    setTimeout(() => setFeedback(null), 3000);
+  }
+
   async function handleRealUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
     try {
       setUploading(true);
-      const asset = await mediaService.uploadFile(file, {
-        title: `${title || 'Artwork'} - ${file.name}`,
-        category: 'artwork',
-        altText: `${title || 'Artwork'} photography by Darey`,
-      });
+      const uploadedAssets = await Promise.all(
+        files.map((file, idx) =>
+          mediaService.uploadFile(file, {
+            title: `${title || 'Artwork'} - ${file.name}`,
+            category: 'artwork',
+            altText: `${title || 'Artwork'} perspective ${images.length + idx + 1}`,
+          })
+        )
+      );
 
-      const newImg: ArtworkImage = {
+      const newImages: ArtworkImage[] = uploadedAssets.map((asset, idx) => ({
         id: asset.id,
         url: asset.url,
-        alt: asset.altText || `${title || 'Artwork'} - view`,
+        alt: asset.altText || `${title || 'Artwork'} view ${images.length + idx + 1}`,
         width: asset.width || 1200,
         height: asset.height || 900,
-        type: images.length === 0 ? 'primary' : 'detail',
-        isCover: images.length === 0,
-      };
+        type: (images.length === 0 && idx === 0 ? 'primary' : 'detail') as ArtworkImageType,
+        isCover: images.length === 0 && idx === 0,
+      }));
 
-      setImages((prev) => [...prev, newImg]);
+      setImages((prev) => [...prev, ...newImages]);
       markDirty();
-      setFeedback('Media asset successfully uploaded to studio archive.');
+      setFeedback(`${files.length} media asset${files.length > 1 ? 's' : ''} uploaded to studio archive.`);
       setTimeout(() => setFeedback(null), 3000);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Upload failed';
@@ -287,8 +329,8 @@ export function ArtworkEditor({ initialArtwork, isNew = false }: ArtworkEditorPr
       slug: slug.trim() || title.toLowerCase().replace(/\s+/g, '-'),
       year,
       medium: medium.trim(),
-      width,
-      height,
+      width: width || 0,
+      height: height || 0,
       depth,
       orientation,
       description: description.trim(),
@@ -311,6 +353,7 @@ export function ArtworkEditor({ initialArtwork, isNew = false }: ArtworkEditorPr
         .map((t) => t.trim())
         .filter(Boolean),
       featured,
+      isPieceOfTheMonth,
       displayOrder,
       coverImage,
       images,
@@ -333,9 +376,9 @@ export function ArtworkEditor({ initialArtwork, isNew = false }: ArtworkEditorPr
         setFeedback('Changes successfully saved to studio catalogue.');
         setTimeout(() => setFeedback(null), 3000);
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      alert('Error saving artwork.');
+      alert(e?.message ? `Error saving artwork: ${e.message}` : 'Error saving artwork.');
     } finally {
       setSaving(false);
     }
@@ -602,11 +645,12 @@ export function ArtworkEditor({ initialArtwork, isNew = false }: ArtworkEditorPr
                 </label>
                 <input
                   type="number"
-                  value={width}
+                  value={width ?? ''}
                   onChange={(e) => {
-                    setWidth(Number(e.target.value));
+                    setWidth(e.target.value ? Number(e.target.value) : undefined);
                     markDirty();
                   }}
+                  placeholder="e.g. 120"
                   className="w-full px-3.5 py-2.5 rounded-xl border border-canvas-border bg-canvas text-charcoal text-sm font-mono focus:outline-none focus:border-charcoal/40"
                 />
               </div>
@@ -617,11 +661,12 @@ export function ArtworkEditor({ initialArtwork, isNew = false }: ArtworkEditorPr
                 </label>
                 <input
                   type="number"
-                  value={height}
+                  value={height ?? ''}
                   onChange={(e) => {
-                    setHeight(Number(e.target.value));
+                    setHeight(e.target.value ? Number(e.target.value) : undefined);
                     markDirty();
                   }}
+                  placeholder="e.g. 100"
                   className="w-full px-3.5 py-2.5 rounded-xl border border-canvas-border bg-canvas text-charcoal text-sm font-mono focus:outline-none focus:border-charcoal/40"
                 />
               </div>
@@ -682,7 +727,7 @@ export function ArtworkEditor({ initialArtwork, isNew = false }: ArtworkEditorPr
               >
                 <option value="available">Available (Publicly Acquirable)</option>
                 <option value="reserved">Reserved (Collector Hold)</option>
-                <option value="sold">Sold / Collected</option>
+                <option value="collected">Collected (Private Collection)</option>
                 <option value="commissioned">Commissioned Work</option>
                 <option value="draft">Draft (Not Available)</option>
               </select>
@@ -806,6 +851,24 @@ export function ArtworkEditor({ initialArtwork, isNew = false }: ArtworkEditorPr
               />
             </div>
 
+            <div className="p-4 rounded-xl border border-canvas-border bg-canvas flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-charcoal">Piece of the Month</p>
+                <p className="text-xs text-charcoal-muted mt-0.5">
+                  Designate as the single spotlight Piece of the Month featured on the homepage.
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={isPieceOfTheMonth}
+                onChange={(e) => {
+                  setIsPieceOfTheMonth(e.target.checked);
+                  markDirty();
+                }}
+                className="w-5 h-5 rounded border-canvas-border text-charcoal focus:ring-0 cursor-pointer"
+              />
+            </div>
+
             <div>
               <label className="block text-xs font-mono uppercase text-charcoal-subtle mb-1.5">
                 Display Order Priority
@@ -826,23 +889,31 @@ export function ArtworkEditor({ initialArtwork, isNew = false }: ArtworkEditorPr
         {/* TAB 5: MEDIA MANAGEMENT */}
         {activeTab === 'media' && (
           <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-canvas-border pb-4">
               <div>
-                <h3 className="font-display text-base font-semibold text-charcoal">
-                  Artwork Images & Perspectives
-                </h3>
-                <p className="text-xs text-charcoal-muted">
-                  Manage primary frontal capture, macro impasto details, framed mockups, and architectural installations.
+                <div className="flex items-center gap-2">
+                  <h3 className="font-display text-base font-semibold text-charcoal">
+                    Artwork Images & Perspectives
+                  </h3>
+                  <span className="px-2 py-0.5 rounded-full text-[0.6875rem] font-mono bg-canvas-muted text-charcoal border border-canvas-border">
+                    {images.length} Image{images.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+                <p className="text-xs text-charcoal-muted mt-0.5">
+                  Attach as many perspectives as desired: primary frontal capture, macro impasto details, raking light profiles, framed mounts, and in-situ installations.
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+
+              <div className="flex flex-wrap items-center gap-2">
                 <input
                   type="file"
                   ref={fileInputRef}
                   onChange={handleRealUpload}
                   accept="image/jpeg,image/png,image/webp,image/avif"
+                  multiple
                   className="hidden"
                 />
+
                 <button
                   type="button"
                   disabled={uploading}
@@ -852,108 +923,215 @@ export function ArtworkEditor({ initialArtwork, isNew = false }: ArtworkEditorPr
                   {uploading ? (
                     <>
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      <span>Uploading to Storage...</span>
+                      <span>Uploading Files...</span>
                     </>
                   ) : (
                     <>
                       <Upload className="w-3.5 h-3.5" />
-                      <span>Upload Media Asset</span>
+                      <span>Upload Images (Multi-Select)</span>
                     </>
                   )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowAddUrl((prev) => !prev)}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-canvas-border bg-canvas text-charcoal text-xs font-medium hover:bg-canvas-subtle transition-colors shadow-2xs"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add from Path / URL</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleMockUpload}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-canvas-border bg-canvas text-charcoal text-xs font-medium hover:bg-canvas-subtle transition-colors shadow-2xs"
+                  title="Add complementary detail view from studio archive"
+                >
+                  <ImageIcon className="w-3.5 h-3.5 text-charcoal-subtle" />
+                  <span>+ Sample Detail</span>
                 </button>
               </div>
             </div>
 
-            {/* Images Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {images.map((img) => (
-                <div
-                  key={img.id}
-                  className={`p-4 rounded-xl border bg-canvas flex flex-col sm:flex-row gap-4 transition-all ${
-                    img.isCover
-                      ? 'border-charcoal shadow-subtle'
-                      : 'border-canvas-border/80'
-                  }`}
-                >
-                  {/* Thumbnail */}
-                  <div className="w-full sm:w-32 aspect-square rounded-lg overflow-hidden bg-stone-100 shrink-0 relative">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={img.url}
-                      alt={img.alt}
-                      className="w-full h-full object-cover"
+            {/* Quick Add Custom Path / URL form */}
+            {showAddUrl && (
+              <div className="p-4 rounded-xl border border-charcoal/20 bg-canvas-muted/60 space-y-3">
+                <p className="text-xs font-mono uppercase tracking-gallery text-charcoal">
+                  Add Image Perspective via URL or Asset Path
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                  <div className="sm:col-span-7">
+                    <input
+                      type="text"
+                      value={customUrlInput}
+                      onChange={(e) => setCustomUrlInput(e.target.value)}
+                      placeholder="e.g. /artworks/pic7.jpeg or https://..."
+                      className="w-full px-3 py-2 rounded-lg border border-canvas-border bg-canvas text-xs font-mono text-charcoal"
                     />
-                    {img.isCover && (
-                      <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-md text-[0.625rem] font-bold font-mono bg-charcoal text-canvas uppercase">
-                        Cover
-                      </span>
-                    )}
                   </div>
-
-                  {/* Metadata fields */}
-                  <div className="flex-1 space-y-2 min-w-0 text-xs">
-                    <div>
-                      <label className="block text-[0.625rem] font-mono uppercase text-charcoal-subtle mb-1">
-                        Perspective Type
-                      </label>
-                      <select
-                        value={img.type || 'primary'}
-                        onChange={(e) =>
-                          updateImageMeta(img.id, {
-                            type: e.target.value as ArtworkImageType,
-                          })
+                  <div className="sm:col-span-3">
+                    <select
+                      value={customUrlType}
+                      onChange={(e) => setCustomUrlType(e.target.value as ArtworkImageType)}
+                      className="w-full px-3 py-2 rounded-lg border border-canvas-border bg-canvas text-xs text-charcoal"
+                    >
+                      <option value="detail">Detail (Macro)</option>
+                      <option value="texture">Texture (Impasto)</option>
+                      <option value="interior">Interior (In Situ)</option>
+                      <option value="angle">Angle (Raking Light)</option>
+                      <option value="framed">Framed / Mount</option>
+                      <option value="primary">Primary (Frontal)</option>
+                    </select>
+                  </div>
+                  <div className="sm:col-span-2 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (customUrlInput.trim()) {
+                          handleAddCustomImageUrl(customUrlInput.trim(), customUrlType);
+                          setCustomUrlInput('');
+                          setShowAddUrl(false);
                         }
-                        className="w-full px-2.5 py-1.5 rounded-lg border border-canvas-border bg-canvas-subtle text-xs text-charcoal"
-                      >
-                        <option value="primary">Primary (Frontal)</option>
-                        <option value="detail">Detail (Macro)</option>
-                        <option value="texture">Texture (Impasto)</option>
-                        <option value="angle">Angle (Raking Light)</option>
-                        <option value="framed">Framed / Mount</option>
-                        <option value="interior">Interior (In Situ)</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-[0.625rem] font-mono uppercase text-charcoal-subtle mb-1">
-                        Alt Text (Accessibility)
-                      </label>
-                      <input
-                        type="text"
-                        value={img.alt}
-                        onChange={(e) => updateImageMeta(img.id, { alt: e.target.value })}
-                        className="w-full px-2.5 py-1.5 rounded-lg border border-canvas-border bg-canvas-subtle text-xs text-charcoal"
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between pt-2">
-                      {!img.isCover ? (
-                        <button
-                          type="button"
-                          onClick={() => setCover(img.id)}
-                          className="text-[0.6875rem] font-medium text-charcoal hover:underline"
-                        >
-                          Set as Cover
-                        </button>
-                      ) : (
-                        <span className="text-[0.6875rem] font-medium text-emerald-700 font-mono">
-                          Primary Cover
-                        </span>
-                      )}
-
-                      <button
-                        type="button"
-                        onClick={() => removeImage(img.id)}
-                        className="p-1 text-charcoal-subtle hover:text-rose-600 rounded"
-                        title="Remove image"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                      }}
+                      className="w-full px-3 py-2 bg-charcoal text-canvas text-xs font-medium rounded-lg hover:bg-black transition-colors"
+                    >
+                      Add Image
+                    </button>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
+
+            {/* Images Grid */}
+            {images.length === 0 ? (
+              <div className="p-12 text-center border border-dashed border-canvas-border rounded-xl bg-canvas">
+                <ImageIcon className="w-8 h-8 text-charcoal-subtle mx-auto mb-2" />
+                <p className="text-sm font-medium text-charcoal">No images attached yet</p>
+                <p className="text-xs text-charcoal-muted mt-1">
+                  Upload high-resolution files or add an asset path above to showcase this artwork.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {images.map((img, idx) => (
+                  <div
+                    key={img.id}
+                    className={`p-4 rounded-xl border bg-canvas flex flex-col sm:flex-row gap-4 transition-all ${
+                      img.isCover
+                        ? 'border-charcoal shadow-subtle'
+                        : 'border-canvas-border/80'
+                    }`}
+                  >
+                    {/* Thumbnail & Badges */}
+                    <div className="w-full sm:w-32 aspect-square rounded-lg overflow-hidden bg-stone-100 shrink-0 relative">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={img.url}
+                        alt={img.alt}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-1.5 left-1.5 flex flex-col gap-1">
+                        {img.isCover && (
+                          <span className="px-1.5 py-0.5 rounded-md text-[0.625rem] font-bold font-mono bg-charcoal text-canvas uppercase">
+                            Cover
+                          </span>
+                        )}
+                        <span className="px-1.5 py-0.5 rounded-md text-[0.625rem] font-mono bg-black/70 backdrop-blur-xs text-canvas">
+                          #{idx + 1}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Metadata fields */}
+                    <div className="flex-1 space-y-2 min-w-0 text-xs">
+                      <div>
+                        <label className="block text-[0.625rem] font-mono uppercase text-charcoal-subtle mb-1">
+                          Perspective Type
+                        </label>
+                        <select
+                          value={img.type || 'primary'}
+                          onChange={(e) =>
+                            updateImageMeta(img.id, {
+                              type: e.target.value as ArtworkImageType,
+                            })
+                          }
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-canvas-border bg-canvas-subtle text-xs text-charcoal"
+                        >
+                          <option value="primary">Primary (Frontal)</option>
+                          <option value="detail">Detail (Macro)</option>
+                          <option value="texture">Texture (Impasto)</option>
+                          <option value="angle">Angle (Raking Light)</option>
+                          <option value="framed">Framed / Mount</option>
+                          <option value="interior">Interior (In Situ)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[0.625rem] font-mono uppercase text-charcoal-subtle mb-1">
+                          Alt Text (Accessibility)
+                        </label>
+                        <input
+                          type="text"
+                          value={img.alt}
+                          onChange={(e) => updateImageMeta(img.id, { alt: e.target.value })}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-canvas-border bg-canvas-subtle text-xs text-charcoal"
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2 border-t border-canvas-border/50">
+                        <div className="flex items-center gap-2">
+                          {!img.isCover ? (
+                            <button
+                              type="button"
+                              onClick={() => setCover(img.id)}
+                              className="text-[0.6875rem] font-medium text-charcoal hover:underline"
+                            >
+                              Set as Cover
+                            </button>
+                          ) : (
+                            <span className="text-[0.6875rem] font-medium text-emerald-700 font-mono">
+                              Primary Cover
+                            </span>
+                          )}
+
+                          {/* Reorder Buttons */}
+                          <div className="flex items-center gap-1 border-l border-canvas-border/80 pl-2">
+                            <button
+                              type="button"
+                              disabled={idx === 0}
+                              onClick={() => moveImage(idx, 'up')}
+                              className="p-1 text-charcoal-subtle hover:text-charcoal disabled:opacity-30 rounded"
+                              title="Move perspective earlier"
+                            >
+                              <ChevronUp className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              disabled={idx === images.length - 1}
+                              onClick={() => moveImage(idx, 'down')}
+                              className="p-1 text-charcoal-subtle hover:text-charcoal disabled:opacity-30 rounded"
+                              title="Move perspective later"
+                            >
+                              <ChevronDown className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => removeImage(img.id)}
+                          className="p-1 text-charcoal-subtle hover:text-rose-600 rounded"
+                          title="Remove image"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

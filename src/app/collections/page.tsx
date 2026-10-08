@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Layers, Sparkles } from 'lucide-react';
 import { Container } from '@/components/layout/Container';
 import { Section } from '@/components/layout/Section';
+import { Button } from '@/components/ui/Button';
 import { CollectionCard } from '@/components/collection/CollectionCard';
 import { ArtworkCard } from '@/components/artwork/ArtworkCard';
 import { collectionService } from '@/services/collectionService';
@@ -74,14 +75,14 @@ export default function CollectionsPage() {
       {/* Interactive Collection Filter Navigation */}
       <Section background="paper" spacing="sm" className="border-b border-canvas-border sticky top-16 sm:top-20 z-30 backdrop-blur-md bg-canvas-paper/90 py-4">
         <Container size="wide">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            {/* Filter Pills */}
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
+          <div className="flex flex-col gap-3">
+            {/* Filter Pills with unrestricted full horizontal scroll */}
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 w-full">
               <button
                 type="button"
                 onClick={() => setSelectedCollectionSlug('all')}
                 className={cn(
-                  'px-4 py-2 text-xs uppercase tracking-gallery font-sans rounded-full border transition-all duration-300 whitespace-nowrap',
+                  'px-4 py-2 text-xs uppercase tracking-gallery font-sans rounded-full border transition-all duration-300 whitespace-nowrap shrink-0',
                   selectedCollectionSlug === 'all'
                     ? 'bg-charcoal text-canvas border-charcoal shadow-sm'
                     : 'bg-canvas text-charcoal-muted border-canvas-border hover:border-charcoal hover:text-charcoal'
@@ -96,7 +97,7 @@ export default function CollectionsPage() {
                   type="button"
                   onClick={() => setSelectedCollectionSlug(col.slug)}
                   className={cn(
-                    'px-4 py-2 text-xs uppercase tracking-gallery font-sans rounded-full border transition-all duration-300 whitespace-nowrap flex items-center gap-2',
+                    'px-4 py-2 text-xs uppercase tracking-gallery font-sans rounded-full border transition-all duration-300 whitespace-nowrap shrink-0 flex items-center gap-2',
                     selectedCollectionSlug === col.slug
                       ? 'bg-charcoal text-canvas border-charcoal shadow-sm'
                       : 'bg-canvas text-charcoal-muted border-canvas-border hover:border-charcoal hover:text-charcoal'
@@ -113,9 +114,18 @@ export default function CollectionsPage() {
               ))}
             </div>
 
-            {/* Inventory Status Counter */}
-            <div className="text-xs text-charcoal-subtle font-mono tracking-gallery shrink-0">
-              Showing {displayedArtworks.length} of {allArtworks.length} Artworks
+            {/* Inventory Status Counter below the tabs */}
+            <div className="flex items-center justify-between pt-1 border-t border-canvas-border/40 text-xs text-charcoal-subtle font-mono tracking-gallery">
+              <span>Showing {displayedArtworks.length} of {allArtworks.length} Artworks</span>
+              {selectedCollectionSlug !== 'all' && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedCollectionSlug('all')}
+                  className="font-sans text-[11px] underline text-charcoal-muted hover:text-charcoal transition-colors tracking-normal"
+                >
+                  Clear filter
+                </button>
+              )}
             </div>
           </div>
         </Container>
@@ -171,17 +181,38 @@ export default function CollectionsPage() {
               </span>
             </div>
           ) : displayedArtworks.length === 0 ? (
-            <div className="py-20 text-center max-w-md mx-auto">
-              <p className="font-serif italic text-lg text-charcoal-muted mb-4">
-                No artworks catalogued under this series currently.
+            <div className="py-24 text-center max-w-lg mx-auto border border-dashed border-canvas-border p-12 rounded-2xl">
+              <span className="gallery-plaque text-xs text-charcoal-subtle uppercase tracking-gallery block mb-3">
+                Curatorial Anthology &bull; In Preparation
+              </span>
+              <h3 className="font-display text-2xl sm:text-3xl text-charcoal mb-4">
+                {collections.length === 0
+                  ? 'Exhibition series in preparation.'
+                  : 'No artworks catalogued under this series currently.'}
+              </h3>
+              <p className="font-sans text-sm text-charcoal-muted leading-relaxed font-light mb-8">
+                {collections.length === 0
+                  ? 'Upcoming thematic series and multi-year bodies of work are currently being curated in the studio.'
+                  : 'Please explore another series or reset to view all catalogued pieces.'}
               </p>
-              <button
-                type="button"
-                onClick={() => setSelectedCollectionSlug('all')}
-                className="text-xs uppercase tracking-gallery text-charcoal underline"
-              >
-                Reset to All Works
-              </button>
+              {collections.length > 0 && selectedCollectionSlug !== 'all' ? (
+                <button
+                  type="button"
+                  onClick={() => setSelectedCollectionSlug('all')}
+                  className="px-6 py-2.5 bg-charcoal text-canvas text-xs uppercase tracking-gallery font-medium rounded-sm hover:bg-charcoal-muted transition-colors"
+                >
+                  Reset to All Works
+                </button>
+              ) : (
+                <div className="flex justify-center gap-4">
+                  <Button href="/commission" variant="primary" size="md">
+                    Create a Piece
+                  </Button>
+                  <Button href="/artworks" variant="outline" size="md">
+                    View Artworks
+                  </Button>
+                </div>
+              )}
             </div>
           ) : (
             <div>

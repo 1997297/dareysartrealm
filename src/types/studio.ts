@@ -196,6 +196,7 @@ export interface CMSHomepageContent {
   manifestoQuote: string;
   manifestoAuthor: string;
   manifestoBody: string;
+  manifestoStackedImages?: string[]; // 3 artwork image URLs for stacked cards
   artistIntroTitle: string;
   artistIntroBody: string;
   commissionCtaHeading: string;

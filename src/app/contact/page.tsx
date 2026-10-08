@@ -1,23 +1,27 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Mail, Clock, MapPin, ArrowRight, CheckCircle2, Loader2, AlertCircle, Phone, Instagram } from 'lucide-react';
 import { Container } from '@/components/layout/Container';
 import { Button } from '@/components/ui/Button';
 import { FormField } from '@/components/forms/FormField';
 import { contactService } from '@/services/contactService';
+import { siteContentService } from '@/services/siteContentService';
+import { INITIAL_CONTACT_CONFIG } from '@/data/initialContent';
+import { ContactPageConfig } from '@/types/siteContent';
 import { CONTACT_INFO, SOCIAL_LINKS } from '@/lib/constants';
 import { ContactIntent, GeneralContactFormData } from '@/types/contact';
 
 const INTENT_OPTIONS: { id: ContactIntent; label: string; desc: string }[] = [
   { id: 'artwork', label: 'Artwork Inquiry', desc: 'Questions about availability, acquisition, or private viewing of an existing canvas.' },
-  { id: 'commission', label: 'Bespoke Commission', desc: 'Initiate a dialogue regarding a custom original artwork or multi-panel piece.' },
+  { id: 'commission', label: 'Create a Piece', desc: 'Discuss an original custom artwork tailored to your space.' },
   { id: 'service', label: 'Architectural / Finishes', desc: 'Mural, interior finishes, or fine-art painting project consultation.' },
   { id: 'general', label: 'General Correspondence', desc: 'Curatorial inquiries, media/press, exhibition proposals, or studio notes.' },
 ];
 
 export default function ContactPage() {
+  const [contactConfig, setContactConfig] = useState<ContactPageConfig>(INITIAL_CONTACT_CONFIG);
   const [intent, setIntent] = useState<ContactIntent>('artwork');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -25,6 +29,18 @@ export default function ContactPage() {
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [preferredChannel, setPreferredChannel] = useState<'email' | 'whatsapp' | 'phone'>('email');
+
+  useEffect(() => {
+    async function loadContactConfig() {
+      try {
+        const data = await siteContentService.getContactConfig();
+        if (data) setContactConfig(data);
+      } catch (err) {
+        console.error('Error loading contact config:', err);
+      }
+    }
+    loadContactConfig();
+  }, []);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionSuccess, setSubmissionSuccess] = useState<{ referenceId: string; timestamp: string } | null>(null);
@@ -80,10 +96,10 @@ export default function ContactPage() {
               DIRECT CORRESPONDENCE
             </span>
             <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-charcoal font-normal tracking-tight">
-              Contact the Studio
+              {contactConfig.headline || 'Contact the Studio'}
             </h1>
             <p className="mt-6 text-base sm:text-lg text-charcoal-muted font-light leading-relaxed">
-              For acquisition inquiries, curatorial questions, bespoke architectural commissions, or private studio viewings. Darey responds personally to all serious inquiries.
+              {contactConfig.subheadline || 'For acquisition inquiries, curatorial questions, bespoke architectural commissions, or private studio viewings. Darey responds personally to all serious inquiries.'}
             </p>
           </div>
         </div>
@@ -102,10 +118,10 @@ export default function ContactPage() {
                   <div>
                     <span className="text-charcoal-subtle block">Direct Email</span>
                     <a
-                      href={`mailto:${CONTACT_INFO.email}`}
+                      href={`mailto:${contactConfig.email || CONTACT_INFO.email}`}
                       className="font-medium text-charcoal text-sm hover:underline"
                     >
-                      {CONTACT_INFO.email}
+                      {contactConfig.email || CONTACT_INFO.email}
                     </a>
                   </div>
                 </div>
@@ -114,7 +130,9 @@ export default function ContactPage() {
                   <MapPin className="w-4 h-4 text-charcoal shrink-0 mt-0.5" />
                   <div>
                     <span className="text-charcoal-subtle block">Studio Presence</span>
-                    <p className="font-medium text-charcoal text-sm">{CONTACT_INFO.location}</p>
+                    <p className="font-medium text-charcoal text-sm">
+                      {contactConfig.location || CONTACT_INFO.location}
+                    </p>
                   </div>
                 </div>
 
@@ -122,7 +140,9 @@ export default function ContactPage() {
                   <Clock className="w-4 h-4 text-charcoal shrink-0 mt-0.5" />
                   <div>
                     <span className="text-charcoal-subtle block">Atelier Hours</span>
-                    <p className="font-medium text-charcoal text-sm">{CONTACT_INFO.hours}</p>
+                    <p className="font-medium text-charcoal text-sm">
+                      {contactConfig.hours || CONTACT_INFO.hours}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -149,7 +169,7 @@ export default function ContactPage() {
                 If you already know the scale and concept of the custom artwork you desire, our interactive commission form allows you to attach reference photographs and wall dimensions directly.
               </p>
               <Button href="/commission" variant="secondary" size="sm">
-                Open Commission Atelier &rarr;
+                Create a Piece &rarr;
               </Button>
             </div>
           </div>
@@ -316,16 +336,16 @@ export default function ContactPage() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-xs font-medium bg-charcoal text-canvas hover:bg-charcoal-muted transition-colors px-8 py-3.5 disabled:opacity-50"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-xs font-medium bg-charcoal text-canvas hover:bg-charcoal-muted transition-colors px-8 py-3.5 rounded-full disabled:opacity-50"
                   >
                     {isSubmitting ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Transmitting Message...</span>
+                        <span>Sending Message...</span>
                       </>
                     ) : (
                       <>
-                        <span>Send Correspondence</span>
+                        <span>Send Message</span>
                         <ArrowRight className="w-4 h-4" />
                       </>
                     )}

@@ -79,7 +79,8 @@ create table if not exists public.artworks (
   price numeric check (price is null or price >= 0),
   currency text not null default 'USD',
   is_price_on_request boolean not null default false,
-  availability_status text not null default 'available' check (availability_status in ('available', 'reserved', 'sold', 'commissioned', 'draft')),
+  -- Canonical domain model: 'available', 'reserved', 'collected', 'commissioned' ('sold' retained for backward compatibility)
+  availability_status text not null default 'available' check (availability_status in ('available', 'reserved', 'collected', 'commissioned', 'sold', 'draft')),
   publication_status text not null default 'draft' check (publication_status in ('draft', 'published', 'archived')),
   featured boolean not null default false,
   accent_color text,

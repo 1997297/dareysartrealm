@@ -128,7 +128,7 @@ export const MOCK_SERVICES: Service[] = [
       url: '/artworks/architectural-murals.jpg',
       alt: 'Large-scale architectural geometric wall mural by Darey',
     },
-    ctaLabel: 'Request Mural Consultation',
+    ctaLabel: 'Get a Quote',
     pricingStructure: 'Per square meter / surface scope + travel and staging expenses (Custom proposal provided)',
     typicalTimeline: '2 to 6 weeks on-site execution following study approval',
     features: [
@@ -184,7 +184,7 @@ export const MOCK_SERVICES: Service[] = [
       url: '/artworks/interior-finishes.jpg',
       alt: 'Artisanal textured interior wall finish with tactile relief',
     },
-    ctaLabel: 'Explore Finishes',
+    ctaLabel: 'View Details',
     pricingStructure: 'Project-based quotation depending on square meters and artisanal techniques',
     typicalTimeline: '1 to 3 weeks on-site installation',
     features: [

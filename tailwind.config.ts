@@ -55,6 +55,13 @@ const config: Config = {
           'Segoe UI',
           'sans-serif',
         ],
+        brush: [
+          'var(--font-brush)',
+          'Kaushan Script',
+          'Alex Brush',
+          'Brush Script MT',
+          'cursive',
+        ],
       },
       fontSize: {
         '2xs': ['0.6875rem', { lineHeight: '1rem', letterSpacing: '0.06em' }],
